@@ -106,6 +106,197 @@
             box-shadow: 0 4px 12px rgba(204, 119, 34, 0.3);
         }
 
+        /* Contact Manager Button */
+        .contact-manager-btn {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #CC7722 0%, #B8651A 100%);
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(204, 119, 34, 0.3);
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .contact-manager-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 20px rgba(204, 119, 34, 0.4);
+        }
+
+        /* Contact Modal */
+        .contact-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 2000;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .contact-modal.show {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .contact-modal-content {
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            max-width: 500px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            animation: slideUp 0.3s ease;
+        }
+
+        .contact-modal-header {
+            padding: 1.5rem 2rem;
+            border-bottom: 1px solid #E0E0E0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .contact-modal-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #000000;
+            margin: 0;
+        }
+
+        .contact-modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: #666666;
+            cursor: pointer;
+            padding: 0;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: all 0.2s ease;
+        }
+
+        .contact-modal-close:hover {
+            background-color: #F5F5F5;
+            color: #333333;
+        }
+
+        .contact-modal-body {
+            padding: 2rem;
+        }
+
+        .contact-form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .contact-form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: #333333;
+        }
+
+        .contact-form-input,
+        .contact-form-textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #E0E0E0;
+            border-radius: 6px;
+            font-family: inherit;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background-color: #FFFFFF;
+        }
+
+        .contact-form-input:focus,
+        .contact-form-textarea:focus {
+            outline: none;
+            border-color: #CC7722;
+            box-shadow: 0 0 0 3px rgba(204, 119, 34, 0.1);
+        }
+
+        .contact-form-textarea {
+            resize: vertical;
+            min-height: 120px;
+        }
+
+        .contact-form-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+            margin-top: 2rem;
+        }
+
+        .contact-btn-secondary {
+            padding: 0.75rem 1.5rem;
+            background-color: #F5F5F5;
+            color: #666666;
+            border: 2px solid #E0E0E0;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .contact-btn-secondary:hover {
+            background-color: #E0E0E0;
+            color: #333333;
+        }
+
+        .contact-btn-primary {
+            padding: 0.75rem 1.5rem;
+            background: linear-gradient(135deg, #CC7722 0%, #B8651A 100%);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+
+        .contact-btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(204, 119, 34, 0.3);
+            color: white;
+            text-decoration: none;
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px) scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
         /* Main Layout */
         .dashboard-container {
             display: grid;
@@ -629,11 +820,50 @@
         </section>
     </main>
 
+    <!-- Floating Contact Button -->
+    <button class="contact-manager-btn" id="contactManagerBtn" title="Связаться с менеджером">
+        ✉️
+    </button>
+
+    <!-- Contact Manager Modal -->
+    <div class="contact-modal" id="contactModal">
+        <div class="contact-modal-content">
+            <div class="contact-modal-header">
+                <h3 class="contact-modal-title">Связаться с менеджером</h3>
+                <button class="contact-modal-close" id="closeContactModal">&times;</button>
+            </div>
+            <div class="contact-modal-body">
+                <div class="contact-form-group">
+                    <label for="contactSubject" class="contact-form-label">Тема</label>
+                    <input type="text" id="contactSubject" class="contact-form-input" placeholder="Кратко опишите тему обращения">
+                </div>
+
+                <div class="contact-form-group">
+                    <label for="contactMessage" class="contact-form-label">Сообщение</label>
+                    <textarea id="contactMessage" class="contact-form-textarea" placeholder="Опишите ваш вопрос или проблему..."></textarea>
+                </div>
+
+                <div class="contact-form-actions">
+                    <button type="button" class="contact-btn-secondary" id="cancelContact">Отмена</button>
+                    <a href="#" class="contact-btn-primary" id="sendEmailLink">Написать менеджеру</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const userAvatar = document.getElementById('userAvatar');
             const userName = document.getElementById('userName');
             const logoutBtn = document.getElementById('logoutBtn');
+
+            // Contact modal elements
+            const contactManagerBtn = document.getElementById('contactManagerBtn');
+            const contactModal = document.getElementById('contactModal');
+            const closeContactModal = document.getElementById('closeContactModal');
+            const cancelContact = document.getElementById('cancelContact');
+            const contactForm = document.getElementById('contactForm');
+            const sendEmailLink = document.getElementById('sendEmailLink');
 
             // Get user data from localStorage
             const user = JSON.parse(localStorage.getItem('user'));
@@ -651,6 +881,55 @@
                 userName.textContent = 'Гость';
                 userAvatar.textContent = 'Г';
             }
+
+            // Contact modal functionality
+            function openContactModal() {
+                contactModal.classList.add('show');
+                document.body.style.overflow = 'hidden';
+            }
+
+            function closeContactModalFunc() {
+                contactModal.classList.remove('show');
+                document.body.style.overflow = '';
+                contactForm.reset();
+            }
+
+            contactManagerBtn.addEventListener('click', openContactModal);
+            closeContactModal.addEventListener('click', closeContactModalFunc);
+            cancelContact.addEventListener('click', closeContactModalFunc);
+
+            // Close modal when clicking outside
+            contactModal.addEventListener('click', function(e) {
+                if (e.target === contactModal) {
+                    closeContactModalFunc();
+                }
+            });
+
+            // Handle email link click
+            sendEmailLink.addEventListener('click', function(e) {
+                e.preventDefault();
+
+                const subject = document.getElementById('contactSubject').value.trim();
+                const message = document.getElementById('contactMessage').value.trim();
+
+                if (!subject || !message) {
+                    alert('Пожалуйста, заполните тему и сообщение.');
+                    return;
+                }
+
+                // Build email content
+                const userInfo = user ? `\n\nИнформация о клиенте:\nИмя: ${user.fullName}\nEmail: ${user.email}` : '';
+                const fullMessage = `${message}${userInfo}\n\nОтправлено через систему управления ООО «Панна сувенир»`;
+
+                // Create Gmail compose URL
+                const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=s.gorbachyonok@gmail.com&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(fullMessage)}`;
+
+                // Open Gmail in new tab
+                window.open(gmailUrl, '_blank');
+
+                // Close modal
+                closeContactModalFunc();
+            });
 
             // Logout functionality
             logoutBtn.addEventListener('click', function() {

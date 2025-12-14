@@ -3,8 +3,9 @@ const mongoose = require('mongoose');
 const OrderSchema = new mongoose.Schema({
     orderNumber: {
         type: String,
-        unique: true,
-        required: true
+        required: true,
+        unique: true
+        
     },
     client: {
         type: mongoose.Schema.Types.ObjectId,
@@ -75,7 +76,7 @@ const CounterSchema = new mongoose.Schema({
     year: {
         type: Number,
         required: true,
-        unique: true
+        unique: true,
     },
     sequence: {
         type: Number,

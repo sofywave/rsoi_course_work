@@ -163,7 +163,6 @@ authForm.addEventListener('submit', async function(e) {
 
             if (result.success) {
                 // Success
-                alert(result.message);
 
                 if (isLoginMode) {
                     // Store user data and token (in a real app, you'd store the JWT)
