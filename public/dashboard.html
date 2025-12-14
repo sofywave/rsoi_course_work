@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ООО «Панна сувенир» - Client Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        /* Reset and Base Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #FFFFFF;
+            color: #333333;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        h1, h2, h3 {
+            font-family: 'Open Sans', sans-serif;
+            color: #000000;
+        }
+
+        /* Header */
+        .dashboard-header {
+            background-color: #FFFFFF;
+            border-bottom: 2px solid #F5F5F5;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .header-branding {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .header-logo {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #CC7722 0%, #B8651A 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: white;
+            box-shadow: 0 2px 8px rgba(204, 119, 34, 0.2);
+        }
+
+        .company-name-header {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .header-nav {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 500;
+        }
+
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background-color: #CC7722;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .logout-btn {
+            background: linear-gradient(135deg, #CC7722 0%, #B8651A 100%);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .logout-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(204, 119, 34, 0.3);
+        }
+
+        /* Main Layout */
+        .dashboard-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            min-height: calc(100vh - 80px);
+            gap: 0;
+        }
+
+        .dashboard-section {
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Order Creation Form */
+        .order-create-section {
+            background-color: #F9F9F9;
+            border-right: 1px solid #E0E0E0;
+        }
+
+        .section-title {
+            font-size: 1.8rem;
+            font-weight: 600;
+            margin-bottom: 2rem;
+            color: #000000;
+        }
+
+        .order-form {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            max-width: 500px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .form-label {
+            font-weight: 500;
+            color: #333333;
+        }
+
+        .form-textarea {
+            padding: 1rem;
+            border: 2px solid #E0E0E0;
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 1rem;
+            resize: vertical;
+            min-height: 120px;
+            transition: all 0.3s ease;
+            background-color: #FFFFFF;
+        }
+
+        .form-textarea:focus {
+            outline: none;
+            border-color: #CC7722;
+            box-shadow: 0 0 0 3px rgba(204, 119, 34, 0.1);
+        }
+
+        .file-upload-area {
+            border: 2px dashed #E0E0E0;
+            border-radius: 8px;
+            padding: 2rem;
+            text-align: center;
+            background-color: #FAFAFA;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .file-upload-area:hover {
+            border-color: #CC7722;
+            background-color: rgba(204, 119, 34, 0.02);
+        }
+
+        .upload-icon {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+            color: #808080;
+        }
+
+        .upload-text {
+            color: #666666;
+            font-size: 0.9rem;
+        }
+
+        .price-estimation {
+            background-color: #FFFFFF;
+            border: 1px solid #E0E0E0;
+            border-radius: 8px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .price-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .price-amount {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #CC7722;
+        }
+
+        .price-note {
+            font-size: 0.8rem;
+            color: #666666;
+            margin-top: 0.5rem;
+        }
+
+        .create-order-btn {
+            background: linear-gradient(135deg, #CC7722 0%, #B8651A 100%);
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 1rem;
+        }
+
+        .create-order-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(204, 119, 34, 0.4);
+        }
+
+        /* Orders List */
+        .orders-list-section {
+            background-color: #FFFFFF;
+        }
+
+        .orders-table-container {
+            background-color: #FFFFFF;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            overflow: hidden;
+        }
+
+        .orders-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .orders-table th {
+            background-color: #F5F5F5;
+            padding: 1rem;
+            text-align: left;
+            font-weight: 600;
+            border-bottom: 2px solid #E0E0E0;
+            color: #000000;
+        }
+
+        .orders-table td {
+            padding: 1rem;
+            border-bottom: 1px solid #F0F0F0;
+            color: #333333;
+        }
+
+        .order-number {
+            font-weight: 600;
+            color: #CC7722;
+        }
+
+        .order-description {
+            max-width: 300px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            text-transform: uppercase;
+        }
+
+        .status-new {
+            background-color: #E0E0E0;
+            color: #666666;
+        }
+
+        .status-progress {
+            background-color: #4A90E2;
+            color: white;
+        }
+
+        .status-completed {
+            background-color: #27AE60;
+            color: white;
+        }
+
+        .order-date {
+            color: #666666;
+            font-size: 0.9rem;
+        }
+
+        /* Mobile Cards */
+        .orders-cards {
+            display: none;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .order-card {
+            background-color: #FFFFFF;
+            border: 1px solid #E0E0E0;
+            border-radius: 8px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .card-title {
+            font-weight: 600;
+            color: #CC7722;
+        }
+
+        .card-description {
+            margin-bottom: 1rem;
+            color: #666666;
+            line-height: 1.4;
+        }
+
+        .card-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1024px) {
+            .dashboard-container {
+                grid-template-columns: 1fr;
+                gap: 0;
+            }
+
+            .order-create-section {
+                border-right: none;
+                border-bottom: 1px solid #E0E0E0;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .dashboard-header {
+                padding: 1rem;
+                flex-direction: column;
+                gap: 1rem;
+                align-items: stretch;
+            }
+
+            .header-nav {
+                justify-content: space-between;
+                gap: 1rem;
+            }
+
+            .dashboard-section {
+                padding: 1.5rem 1rem;
+            }
+
+            .section-title {
+                font-size: 1.5rem;
+                margin-bottom: 1.5rem;
+            }
+
+            .order-form {
+                max-width: 100%;
+            }
+
+            .file-upload-area {
+                padding: 1.5rem;
+            }
+
+            .price-estimation {
+                padding: 1rem;
+            }
+
+            /* Switch to cards on mobile */
+            .orders-table-container {
+                display: none;
+            }
+
+            .orders-cards {
+                display: flex;
+            }
+
+            .create-order-btn {
+                width: 100%;
+                padding: 1rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .dashboard-header {
+                padding: 0.75rem;
+            }
+
+            .header-branding {
+                gap: 0.5rem;
+            }
+
+            .header-logo {
+                width: 40px;
+                height: 40px;
+                font-size: 1.2rem;
+            }
+
+            .company-name-header {
+                font-size: 1.2rem;
+            }
+
+            .user-info {
+                font-size: 0.9rem;
+            }
+
+            .logout-btn {
+                padding: 6px 12px;
+                font-size: 0.8rem;
+            }
+
+            .dashboard-section {
+                padding: 1rem 0.75rem;
+            }
+
+            .section-title {
+                font-size: 1.3rem;
+            }
+
+            .form-textarea {
+                min-height: 100px;
+                padding: 0.75rem;
+            }
+
+            .file-upload-area {
+                padding: 1rem;
+            }
+
+            .upload-icon {
+                font-size: 1.5rem;
+            }
+
+            .order-card {
+                padding: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="dashboard-header">
+        <div class="header-branding">
+            <div class="header-logo">🎨</div>
+            <h1 class="company-name-header">ООО «Панна сувенир»</h1>
+        </div>
+        <nav class="header-nav">
+            <div class="user-info">
+                <div class="user-avatar" id="userAvatar">ИИ</div>
+                <span id="userName">Загрузка...</span>
+            </div>
+            <button class="logout-btn" id="logoutBtn">Выйти</button>
+        </nav>
+    </header>
+
+    <!-- Main Dashboard -->
+    <main class="dashboard-container">
+        <!-- Order Creation Section -->
+        <section class="dashboard-section order-create-section">
+            <h2 class="section-title">Новый заказ</h2>
+
+            <form class="order-form">
+                <div class="form-group">
+                    <label for="orderDescription" class="form-label">Описание заказа</label>
+                    <textarea
+                        id="orderDescription"
+                        name="orderDescription"
+                        class="form-textarea"
+                        placeholder="Опишите ваш сувенир (материал, размеры, особенности)..."
+                        required></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Эскизы дизайна</label>
+                    <div class="file-upload-area">
+                        <div class="upload-icon">📎</div>
+                        <div class="upload-text">Перетащите файлы сюда или нажмите для выбора</div>
+                    </div>
+                </div>
+
+                <div class="price-estimation">
+                    <div class="price-title">Предварительная стоимость</div>
+                    <div class="price-amount">от 500 BYN</div>
+                    <div class="price-note">Точная цена будет рассчитана после согласования деталей</div>
+                </div>
+
+                <button type="submit" class="create-order-btn">Создать заказ</button>
+            </form>
+        </section>
+
+        <!-- Orders List Section -->
+        <section class="dashboard-section orders-list-section">
+            <h2 class="section-title">Мои заказы</h2>
+
+            <!-- Desktop Table -->
+            <div class="orders-table-container">
+                <table class="orders-table">
+                    <thead>
+                        <tr>
+                            <th>Номер</th>
+                            <th>Описание</th>
+                            <th>Статус</th>
+                            <th>Дата</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="order-number">#00123</td>
+                            <td class="order-description">Керамическая кружка с индивидуальным дизайном, размер 300ml</td>
+                            <td><span class="status-badge status-completed">выполнен</span></td>
+                            <td class="order-date">15.12.2025</td>
+                        </tr>
+                        <tr>
+                            <td class="order-number">#00124</td>
+                            <td class="order-description">Деревянная подставка для книг с гравировкой, размер 20x15cm</td>
+                            <td><span class="status-badge status-progress">в работе</span></td>
+                            <td class="order-date">20.12.2025</td>
+                        </tr>
+                        <tr>
+                            <td class="order-number">#00125</td>
+                            <td class="order-description">Текстильная сумка с вышивкой логотипа компании</td>
+                            <td><span class="status-badge status-new">новый</span></td>
+                            <td class="order-date">22.12.2025</td>
+                        </tr>
+                        <tr>
+                            <td class="order-number">#00126</td>
+                            <td class="order-description">Металлическая табличка с гравировкой, размер 10x5cm</td>
+                            <td><span class="status-badge status-completed">выполнен</span></td>
+                            <td class="order-date">10.12.2025</td>
+                        </tr>
+                        <tr>
+                            <td class="order-number">#00127</td>
+                            <td class="order-description">Стеклянная ваза ручной работы, высота 25cm</td>
+                            <td><span class="status-badge status-progress">в работе</span></td>
+                            <td class="order-date">18.12.2025</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Mobile Cards -->
+            <div class="orders-cards">
+                <div class="order-card">
+                    <div class="card-header">
+                        <span class="card-title">#00123</span>
+                        <span class="status-badge status-completed">выполнен</span>
+                    </div>
+                    <div class="card-description">Керамическая кружка с индивидуальным дизайном, размер 300ml</div>
+                    <div class="card-footer">
+                        <span class="order-date">15.12.2025</span>
+                    </div>
+                </div>
+
+                <div class="order-card">
+                    <div class="card-header">
+                        <span class="card-title">#00124</span>
+                        <span class="status-badge status-progress">в работе</span>
+                    </div>
+                    <div class="card-description">Деревянная подставка для книг с гравировкой, размер 20x15cm</div>
+                    <div class="card-footer">
+                        <span class="order-date">20.12.2025</span>
+                    </div>
+                </div>
+
+                <div class="order-card">
+                    <div class="card-header">
+                        <span class="card-title">#00125</span>
+                        <span class="status-badge status-new">новый</span>
+                    </div>
+                    <div class="card-description">Текстильная сумка с вышивкой логотипа компании</div>
+                    <div class="card-footer">
+                        <span class="order-date">22.12.2025</span>
+                    </div>
+                </div>
+
+                <div class="order-card">
+                    <div class="card-header">
+                        <span class="card-title">#00126</span>
+                        <span class="status-badge status-completed">выполнен</span>
+                    </div>
+                    <div class="card-description">Металлическая табличка с гравировкой, размер 10x5cm</div>
+                    <div class="card-footer">
+                        <span class="order-date">10.12.2025</span>
+                    </div>
+                </div>
+
+                <div class="order-card">
+                    <div class="card-header">
+                        <span class="card-title">#00127</span>
+                        <span class="status-badge status-progress">в работе</span>
+                    </div>
+                    <div class="card-description">Стеклянная ваза ручной работы, высота 25cm</div>
+                    <div class="card-footer">
+                        <span class="order-date">18.12.2025</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const userAvatar = document.getElementById('userAvatar');
+            const userName = document.getElementById('userName');
+            const logoutBtn = document.getElementById('logoutBtn');
+
+            // Get user data from localStorage
+            const user = JSON.parse(localStorage.getItem('user'));
+
+            if (user && user.fullName) {
+                userName.textContent = user.fullName;
+
+                // Generate initials for avatar
+                const nameParts = user.fullName.split(' ');
+                const initials = nameParts.length >= 2
+                    ? (nameParts[0][0] + nameParts[1][0]).toUpperCase()
+                    : nameParts[0][0].toUpperCase();
+                userAvatar.textContent = initials;
+            } else {
+                userName.textContent = 'Гость';
+                userAvatar.textContent = 'Г';
+            }
+
+            // Logout functionality
+            logoutBtn.addEventListener('click', function() {
+                localStorage.removeItem('user');
+                localStorage.removeItem('token');
+                window.location.href = '/';
+            });
+        });
+    </script>
+</body>
+</html>
