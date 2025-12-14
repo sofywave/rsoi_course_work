@@ -12,11 +12,13 @@ const emailError = document.getElementById('emailError');
 const passwordError = document.getElementById('passwordError');
 const confirmPasswordError = document.getElementById('confirmPasswordError');
 const fullNameError = document.getElementById('fullNameError');
+const phoneError = document.getElementById('phoneError');
 
 // Form inputs
 const emailInput = document.getElementById('email');
 const confirmPasswordInput = document.getElementById('confirmPassword');
 const fullNameInput = document.getElementById('fullName');
+const phoneInput = document.getElementById('phone');
 
 let isLoginMode = true;
 
@@ -32,8 +34,10 @@ function toggleForm(mode) {
         // Reset registration fields
         confirmPasswordInput.value = '';
         fullNameInput.value = '';
+        phoneInput.value = '';
         confirmPasswordError.classList.remove('show');
         fullNameError.classList.remove('show');
+        phoneError.classList.remove('show');
     } else {
         registerToggle.classList.add('active');
         loginToggle.classList.remove('active');
@@ -62,12 +66,20 @@ function clearAllErrors() {
     passwordError.classList.remove('show');
     confirmPasswordError.classList.remove('show');
     fullNameError.classList.remove('show');
+    phoneError.classList.remove('show');
 }
 
 // Email validation
 function validateEmail(email) {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
+}
+
+// Phone validation
+function validatePhone(phone) {
+    // Allow optional + at start, then numbers, dashes, parentheses, spaces
+    const phoneRegex = /^[\+]?[0-9\-\(\)\s]+$/;
+    return phoneRegex.test(phone);
 }
 
 // Form validation
@@ -105,28 +117,89 @@ function validateForm() {
             fullNameError.classList.add('show');
             isValid = false;
         }
+
+        // Phone validation (optional, but if provided, must be valid)
+        if (phoneInput.value.trim() && !validatePhone(phoneInput.value)) {
+            phoneError.classList.add('show');
+            isValid = false;
+        }
     }
 
     return isValid;
 }
 
 // Form submission
-authForm.addEventListener('submit', function(e) {
+authForm.addEventListener('submit', async function(e) {
     e.preventDefault();
 
     if (validateForm()) {
-        // Here you would typically send the data to your backend
-        console.log('Form is valid! Ready to submit to backend.');
+        try {
+            submitBtn.disabled = true;
+            submitBtn.textContent = isLoginMode ? 'Вход...' : 'Создание...';
 
-        // For demonstration, show success message
-        alert(isLoginMode ? 'Login successful!' : 'Account created successfully!');
+            const formData = {
+                email: emailInput.value.trim(),
+                password: passwordInput.value
+            };
 
-        // Reset form after successful submission
-        if (isLoginMode) {
-            authForm.reset();
-        } else {
-            toggleForm('login');
-            authForm.reset();
+            if (!isLoginMode) {
+                // Registration
+                formData.name = fullNameInput.value.trim();
+                if (phoneInput.value.trim()) {
+                    formData.phone = phoneInput.value.trim();
+                }
+            }
+
+            const endpoint = isLoginMode ? '/api/login' : '/api/register';
+            const response = await fetch(endpoint, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(formData)
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                // Success
+                alert(result.message);
+
+                if (isLoginMode) {
+                    // Store user data and token (in a real app, you'd store the JWT)
+                    localStorage.setItem('user', JSON.stringify(result.user));
+                    localStorage.setItem('token', result.token);
+
+                    // Redirect to dashboard or main app
+                    window.location.href = '/dashboard'; // You'll need to create this route
+                } else {
+                    // After successful registration, automatically log the user in and redirect to dashboard
+                    localStorage.setItem('user', JSON.stringify(result.user));
+                    localStorage.setItem('token', result.token);
+
+                    // Redirect to dashboard
+                    window.location.href = '/dashboard';
+                }
+
+                authForm.reset();
+            } else {
+                // Error
+                if (result.message.includes('email')) {
+                    emailError.textContent = result.message;
+                    emailError.classList.add('show');
+                } else if (result.message.includes('password')) {
+                    passwordError.classList.add('show');
+                } else {
+                    alert(result.message);
+                }
+            }
+
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Произошла ошибка. Попробуйте еще раз.');
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.textContent = isLoginMode ? 'Войти' : 'Создать аккаунт';
         }
     }
 });
