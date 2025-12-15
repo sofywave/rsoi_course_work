@@ -243,10 +243,32 @@ app.post('/api/login', async (req, res) => {
 
 // Order API Routes
 
+// GET /api/product-types - Get available product types with price ranges
+app.get('/api/product-types', (req, res) => {
+    // Import the PRODUCT_PRICE_MAPPING from the Order model
+    const Order = require('./models/Order');
+    const productTypes = {};
+
+    // Get the product types from the Order model's PRODUCT_PRICE_MAPPING
+    for (const [key, value] of Object.entries(Order.getProductPriceMapping())) {
+        productTypes[key] = {
+            displayName: key.charAt(0).toUpperCase() + key.slice(1).replace(/_/g, ' '),
+            priceRange: value.range,
+            minPrice: value.min,
+            maxPrice: value.max
+        };
+    }
+
+    res.json({
+        success: true,
+        productTypes: productTypes
+    });
+});
+
 // POST /api/orders - Create new order with optional photo uploads
 app.post('/api/orders', uploadPhotos.array('photos', 10), async (req, res) => {
     try {
-        const { clientId, description, price, deadline } = req.body;
+        const { clientId, description, price, deadline, productType } = req.body;
 
         // Basic validation
         if (!clientId) {
@@ -284,6 +306,7 @@ app.post('/api/orders', uploadPhotos.array('photos', 10), async (req, res) => {
             description,
             price: price ? parseFloat(price) : undefined,
             deadline: deadline ? new Date(deadline) : undefined,
+            productType,
             photos
         });
 
