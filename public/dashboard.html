@@ -83,6 +83,15 @@
             font-weight: 500;
         }
 
+        .user-name-clickable {
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+
+        .user-name-clickable:hover {
+            color: #CC7722;
+        }
+
         .user-avatar {
             width: 32px;
             height: 32px;
@@ -335,8 +344,7 @@
             display: flex;
             flex-direction: column;
             gap: 1.5rem;
-            width: 100%;
-            max-width: none;
+            max-width: 500px;
         }
 
         .form-group {
@@ -550,6 +558,156 @@
             align-items: center;
         }
 
+        /* Profile Modal Styles */
+        .profile-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 3000;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .profile-modal.show {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .profile-modal-content {
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            max-width: 500px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            animation: slideUp 0.3s ease;
+        }
+
+        .profile-modal-header {
+            padding: 1.5rem 2rem;
+            border-bottom: 1px solid #E0E0E0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .profile-modal-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #000000;
+            margin: 0;
+        }
+
+        .profile-modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: #666666;
+            cursor: pointer;
+            padding: 0;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: all 0.2s ease;
+        }
+
+        .profile-modal-close:hover {
+            background-color: #F5F5F5;
+            color: #333333;
+        }
+
+        .profile-modal-body {
+            padding: 2rem;
+        }
+
+        .profile-section-modal {
+            margin-bottom: 2rem;
+        }
+
+        .profile-section-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: #000000;
+        }
+
+        .form-group-modal {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label-modal {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: #333333;
+            font-size: 0.9rem;
+        }
+
+        .form-input-modal {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #E0E0E0;
+            border-radius: 6px;
+            font-family: inherit;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background-color: #FFFFFF;
+        }
+
+        .form-input-modal:focus {
+            outline: none;
+            border-color: #CC7722;
+            box-shadow: 0 0 0 3px rgba(204, 119, 34, 0.1);
+        }
+
+        .profile-form-modal,
+        .password-form-modal {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .password-change-section-modal {
+            border-top: 1px solid #E0E0E0;
+            padding-top: 2rem;
+        }
+
+        .profile-update-btn-modal,
+        .password-update-btn-modal {
+            background: linear-gradient(135deg, #CC7722 0%, #B8651A 100%);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            align-self: flex-start;
+            margin-top: 0.5rem;
+        }
+
+        .profile-update-btn-modal:hover,
+        .password-update-btn-modal:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(204, 119, 34, 0.3);
+        }
+
+        .profile-update-btn-modal:disabled,
+        .password-update-btn-modal:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
         /* Responsive Design */
         @media (max-width: 1024px) {
             .dashboard-container {
@@ -687,7 +845,7 @@
         <nav class="header-nav">
             <div class="user-info">
                 <div class="user-avatar" id="userAvatar">ИИ</div>
-                <span id="userName">Загрузка...</span>
+                <span id="userName" class="user-name-clickable">Загрузка...</span>
             </div>
             <button class="logout-btn" id="logoutBtn">Выйти</button>
         </nav>
@@ -869,11 +1027,107 @@
         </div>
     </div>
 
+    <!-- Profile Modal -->
+    <div class="profile-modal" id="profileModal">
+        <div class="profile-modal-content">
+            <div class="profile-modal-header">
+                <h3 class="profile-modal-title">Редактировать профиль</h3>
+                <button class="profile-modal-close" id="closeProfileModal">&times;</button>
+            </div>
+            <div class="profile-modal-body">
+                <!-- Profile Information Form -->
+                <div class="profile-section-modal">
+                    <h4 class="profile-section-title">Личная информация</h4>
+                    <form class="profile-form-modal">
+                        <div class="form-group-modal">
+                            <label for="modalProfileFullName" class="form-label-modal">Имя и фамилия</label>
+                            <input
+                                type="text"
+                                id="modalProfileFullName"
+                                name="fullName"
+                                class="form-input-modal"
+                                placeholder="Введите ваше имя и фамилию"
+                                required>
+                        </div>
+
+                        <div class="form-group-modal">
+                            <label for="modalProfileEmail" class="form-label-modal">Email</label>
+                            <input
+                                type="email"
+                                id="modalProfileEmail"
+                                name="email"
+                                class="form-input-modal"
+                                placeholder="Введите ваш email"
+                                required>
+                        </div>
+
+                        <button type="submit" class="profile-update-btn-modal">Обновить профиль</button>
+                    </form>
+                </div>
+
+                <!-- Password Change Section -->
+                <div class="password-change-section-modal">
+                    <h4 class="profile-section-title">Изменить пароль</h4>
+                    <form class="password-form-modal">
+                        <div class="form-group-modal">
+                            <label for="modalCurrentPassword" class="form-label-modal">Текущий пароль</label>
+                            <input
+                                type="password"
+                                id="modalCurrentPassword"
+                                name="currentPassword"
+                                class="form-input-modal"
+                                placeholder="Введите текущий пароль"
+                                required>
+                        </div>
+
+                        <div class="form-group-modal">
+                            <label for="modalNewPassword" class="form-label-modal">Новый пароль</label>
+                            <input
+                                type="password"
+                                id="modalNewPassword"
+                                name="newPassword"
+                                class="form-input-modal"
+                                placeholder="Введите новый пароль"
+                                minlength="6"
+                                required>
+                        </div>
+
+                        <div class="form-group-modal">
+                            <label for="modalConfirmNewPassword" class="form-label-modal">Подтвердите новый пароль</label>
+                            <input
+                                type="password"
+                                id="modalConfirmNewPassword"
+                                name="confirmNewPassword"
+                                class="form-input-modal"
+                                placeholder="Подтвердите новый пароль"
+                                required>
+                        </div>
+
+                        <button type="submit" class="password-update-btn-modal">Изменить пароль</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const userAvatar = document.getElementById('userAvatar');
             const userName = document.getElementById('userName');
             const logoutBtn = document.getElementById('logoutBtn');
+
+            // Profile modal elements
+            const profileModal = document.getElementById('profileModal');
+            const closeProfileModal = document.getElementById('closeProfileModal');
+            const modalProfileFullName = document.getElementById('modalProfileFullName');
+            const modalProfileEmail = document.getElementById('modalProfileEmail');
+            const modalCurrentPassword = document.getElementById('modalCurrentPassword');
+            const modalNewPassword = document.getElementById('modalNewPassword');
+            const modalConfirmNewPassword = document.getElementById('modalConfirmNewPassword');
+            const profileUpdateBtnModal = document.querySelector('.profile-update-btn-modal');
+            const passwordUpdateBtnModal = document.querySelector('.password-update-btn-modal');
+            const profileFormModal = document.querySelector('.profile-form-modal');
+            const passwordFormModal = document.querySelector('.password-form-modal');
 
             // Contact modal elements
             const contactManagerBtn = document.getElementById('contactManagerBtn');
@@ -947,6 +1201,191 @@
 
                 // Close modal
                 closeContactModalFunc();
+            });
+
+            // Profile modal functionality
+            function openProfileModal() {
+                if (user) {
+                    modalProfileFullName.value = user.fullName || '';
+                    modalProfileEmail.value = user.email || '';
+                }
+                profileModal.classList.add('show');
+                document.body.style.overflow = 'hidden';
+                modalProfileFullName.focus();
+            }
+
+            function closeProfileModalFunc() {
+                profileModal.classList.remove('show');
+                document.body.style.overflow = '';
+                // Clear password fields
+                modalCurrentPassword.value = '';
+                modalNewPassword.value = '';
+                modalConfirmNewPassword.value = '';
+                // Clear any messages
+                const messages = profileModal.querySelectorAll('.message');
+                messages.forEach(msg => msg.remove());
+            }
+
+            userName.addEventListener('click', openProfileModal);
+            closeProfileModal.addEventListener('click', closeProfileModalFunc);
+
+            // Close modal when clicking outside
+            profileModal.addEventListener('click', function(e) {
+                if (e.target === profileModal) {
+                    closeProfileModalFunc();
+                }
+            });
+
+            // Utility function to show messages
+            function showMessage(type, text, parentElement) {
+                // Remove existing messages
+                const existingMessage = parentElement.querySelector('.message');
+                if (existingMessage) {
+                    existingMessage.remove();
+                }
+
+                // Create new message
+                const message = document.createElement('div');
+                message.className = `message ${type}`;
+                message.textContent = text;
+                message.classList.add('show');
+
+                parentElement.insertBefore(message, parentElement.firstChild);
+
+                // Auto-hide success messages after 5 seconds
+                if (type === 'success') {
+                    setTimeout(() => {
+                        message.classList.remove('show');
+                        setTimeout(() => message.remove(), 300);
+                    }, 5000);
+                }
+            }
+
+            // Profile form submission (modal)
+            profileFormModal.addEventListener('submit', async function(e) {
+                e.preventDefault();
+
+                const formData = {
+                    fullName: modalProfileFullName.value.trim(),
+                    email: modalProfileEmail.value.trim()
+                };
+
+                // Basic validation
+                if (!formData.fullName || !formData.email) {
+                    showMessage('error', 'Все поля обязательны для заполнения', profileFormModal);
+                    return;
+                }
+
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (!emailRegex.test(formData.email)) {
+                    showMessage('error', 'Пожалуйста, введите корректный email адрес', profileFormModal);
+                    return;
+                }
+
+                try {
+                    profileUpdateBtnModal.disabled = true;
+                    profileUpdateBtnModal.textContent = 'Обновление...';
+
+                    const response = await fetch('/api/users/profile', {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'user-id': user.id,
+                            'user-role': user.role
+                        },
+                        body: JSON.stringify(formData)
+                    });
+
+                    const result = await response.json();
+
+                    if (result.success) {
+                        // Update localStorage and UI
+                        const updatedUser = { ...user, ...result.user };
+                        localStorage.setItem('user', JSON.stringify(updatedUser));
+
+                        // Update header display
+                        document.getElementById('userName').textContent = updatedUser.fullName;
+                        const nameParts = updatedUser.fullName.split(' ');
+                        const initials = nameParts.length >= 2
+                            ? (nameParts[0][0] + nameParts[1][0]).toUpperCase()
+                            : nameParts[0][0].toUpperCase();
+                        document.getElementById('userAvatar').textContent = initials;
+
+                        showMessage('success', 'Профиль успешно обновлен', profileFormModal);
+                    } else {
+                        showMessage('error', result.message || 'Ошибка при обновлении профиля', profileFormModal);
+                    }
+                } catch (error) {
+                    console.error('Profile update error:', error);
+                    showMessage('error', 'Произошла ошибка при обновлении профиля', profileFormModal);
+                } finally {
+                    profileUpdateBtnModal.disabled = false;
+                    profileUpdateBtnModal.textContent = 'Обновить профиль';
+                }
+            });
+
+            // Password form submission (modal)
+            passwordFormModal.addEventListener('submit', async function(e) {
+                e.preventDefault();
+
+                const formData = {
+                    currentPassword: modalCurrentPassword.value,
+                    newPassword: modalNewPassword.value,
+                    confirmPassword: modalConfirmNewPassword.value
+                };
+
+                // Basic validation
+                if (!formData.currentPassword || !formData.newPassword || !formData.confirmPassword) {
+                    showMessage('error', 'Все поля обязательны для заполнения', passwordFormModal);
+                    return;
+                }
+
+                if (formData.newPassword.length < 6) {
+                    showMessage('error', 'Новый пароль должен быть не менее 6 символов', passwordFormModal);
+                    return;
+                }
+
+                if (formData.newPassword !== formData.confirmPassword) {
+                    showMessage('error', 'Пароли не совпадают', passwordFormModal);
+                    return;
+                }
+
+                try {
+                    passwordUpdateBtnModal.disabled = true;
+                    passwordUpdateBtnModal.textContent = 'Изменение...';
+
+                    const response = await fetch('/api/users/profile', {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'user-id': user.id,
+                            'user-role': user.role
+                        },
+                        body: JSON.stringify({
+                            currentPassword: formData.currentPassword,
+                            newPassword: formData.newPassword
+                        })
+                    });
+
+                    const result = await response.json();
+
+                    if (result.success) {
+                        // Clear password fields
+                        modalCurrentPassword.value = '';
+                        modalNewPassword.value = '';
+                        modalConfirmNewPassword.value = '';
+
+                        showMessage('success', 'Пароль успешно изменен', passwordFormModal);
+                    } else {
+                        showMessage('error', result.message || 'Ошибка при изменении пароля', passwordFormModal);
+                    }
+                } catch (error) {
+                    console.error('Password update error:', error);
+                    showMessage('error', 'Произошла ошибка при изменении пароля', passwordFormModal);
+                } finally {
+                    passwordUpdateBtnModal.disabled = false;
+                    passwordUpdateBtnModal.textContent = 'Изменить пароль';
+                }
             });
 
             // Logout functionality
