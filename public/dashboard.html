@@ -426,6 +426,14 @@
             font-size: 0.9rem;
         }
 
+        .selected-files {
+            background-color: rgba(204, 119, 34, 0.1);
+            padding: 8px 12px;
+            border-radius: 4px;
+            border: 1px solid rgba(204, 119, 34, 0.2);
+            word-wrap: break-word;
+        }
+
         .price-estimation {
             background-color: #FFFFFF;
             border: 1px solid #E0E0E0;
@@ -902,9 +910,10 @@
 
                 <div class="form-group">
                     <label class="form-label">Эскизы дизайна</label>
-                    <div class="file-upload-area" onclick="document.getElementById('photoInput').click()">
-                        <div class="upload-icon">📎</div>
-                        <div class="upload-text">Перетащите файлы сюда или нажмите для выбора</div>
+                    <div class="file-upload-area" onclick="document.getElementById('photoInput').click()" id="fileUploadArea">
+                        <div class="upload-icon" id="uploadIcon">📎</div>
+                        <div class="upload-text" id="uploadText">Перетащите файлы сюда или нажмите для выбора</div>
+                        <div class="selected-files" id="selectedFiles" style="display: none; margin-top: 10px; font-size: 0.9em; color: #CC7722;"></div>
                         <input type="file" id="photoInput" name="photos" accept="image/*" multiple style="display: none;">
                     </div>
                 </div>
@@ -1074,6 +1083,10 @@
             const priceEstimation = document.querySelector('.price-estimation');
             const priceAmount = document.querySelector('.price-amount');
             const priceNote = document.querySelector('.price-note');
+            const photoInput = document.getElementById('photoInput');
+            const uploadIcon = document.getElementById('uploadIcon');
+            const uploadText = document.getElementById('uploadText');
+            const selectedFiles = document.getElementById('selectedFiles');
 
             // Profile modal elements
             const profileModal = document.getElementById('profileModal');
@@ -1402,6 +1415,30 @@
             // Handle product type change
             productTypeSelect.addEventListener('change', updatePriceEstimation);
 
+            // Handle file selection
+            photoInput.addEventListener('change', function(e) {
+                const files = e.target.files;
+                if (files.length > 0) {
+                    // Show selected files
+                    let fileNames = [];
+                    for (let i = 0; i < files.length; i++) {
+                        fileNames.push(files[i].name);
+                    }
+
+                    uploadIcon.textContent = '✅';
+                    uploadText.textContent = `${files.length} файл(ов) выбрано`;
+                    selectedFiles.textContent = `Выбранные файлы: ${fileNames.join(', ')}`;
+                    selectedFiles.style.display = 'block';
+
+                    console.log('Files selected:', fileNames);
+                } else {
+                    // Reset to default state
+                    uploadIcon.textContent = '📎';
+                    uploadText.textContent = 'Перетащите файлы сюда или нажмите для выбора';
+                    selectedFiles.style.display = 'none';
+                }
+            });
+
             // Handle order form submission
             orderForm.addEventListener('submit', async function(e) {
                 e.preventDefault();
@@ -1412,10 +1449,11 @@
                 formData.append('description', orderDescription.value.trim());
 
                 // Add photos if any are selected
-                const photoInput = document.querySelector('input[type="file"]');
                 if (photoInput && photoInput.files.length > 0) {
+                    console.log('Adding', photoInput.files.length, 'files to form data');
                     for (let i = 0; i < photoInput.files.length; i++) {
                         formData.append('photos', photoInput.files[i]);
+                        console.log('Added file:', photoInput.files[i].name);
                     }
                 }
 
@@ -1437,6 +1475,12 @@
                         // Reset form
                         orderForm.reset();
                         updatePriceEstimation();
+
+                        // Reset file upload area
+                        uploadIcon.textContent = '📎';
+                        uploadText.textContent = 'Перетащите файлы сюда или нажмите для выбора';
+                        selectedFiles.style.display = 'none';
+                        photoInput.value = '';
 
                         // Refresh orders list
                         loadOrders();
