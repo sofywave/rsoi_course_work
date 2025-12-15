@@ -632,6 +632,169 @@ app.delete('/api/orders/:id/photos/:filename', async (req, res) => {
     }
 });
 
+// User Profile API Routes
+
+// GET /api/users/debug - Debug endpoint to check users
+app.get('/api/users/debug', async (req, res) => {
+    try {
+        const users = await User.find({}, '_id email fullName role');
+        res.json({
+            success: true,
+            users: users.map(u => ({
+                id: u._id,
+                email: u.email,
+                fullName: u.fullName,
+                role: u.role
+            })),
+            total: users.length
+        });
+    } catch (error) {
+        console.error('Debug error:', error);
+        res.status(500).json({ success: false, message: 'Debug error' });
+    }
+});
+
+// PUT /api/users/profile - Update user profile
+app.put('/api/users/profile', async (req, res) => {
+    console.log('Profile update request received:', req.body);
+    console.log('Headers:', { 'user-id': req.headers['user-id'], 'user-role': req.headers['user-role'] });
+    try {
+        // Mock authentication - in production, verify JWT token
+        const userId = req.headers['user-id']; // In production, get from JWT
+        if (!userId) {
+            console.log('No user-id in headers');
+            return res.status(401).json({
+                success: false,
+                message: 'Authentication required'
+            });
+        }
+
+        // For now, let's try to find user by email if ID doesn't work (fallback for development)
+        let user = await User.findById(userId).select('+password');
+
+        if (!user && req.body.email) {
+            console.log('User not found by ID, trying email fallback:', req.body.email);
+            user = await User.findOne({ email: req.body.email }).select('+password');
+        }
+
+        if (!user) {
+            console.log('User not found with ID:', userId);
+            console.log('Available users in database:');
+            const allUsers = await User.find({}, '_id email fullName');
+            console.log(allUsers.map(u => ({ id: u._id, email: u.email, fullName: u.fullName })));
+
+            return res.status(404).json({
+                success: false,
+                message: 'User not found. Please try logging out and logging back in.'
+            });
+        }
+
+        console.log('User found:', { id: user._id, email: user.email, fullName: user.fullName });
+
+        const { fullName, email, currentPassword, newPassword } = req.body;
+
+        // Handle password change
+        if (currentPassword && newPassword) {
+            console.log('Password change requested');
+            console.log('Current password provided:', !!currentPassword);
+            console.log('New password length:', newPassword.length);
+
+            // Verify current password
+            console.log('Stored password hash exists:', !!user.password);
+            console.log('Stored password hash length:', user.password ? user.password.length : 0);
+            const isCurrentPasswordValid = await user.matchPassword(currentPassword);
+            console.log('Current password valid:', isCurrentPasswordValid);
+
+            if (!isCurrentPasswordValid) {
+                console.log('Current password verification failed');
+                return res.status(400).json({
+                    success: false,
+                    message: 'Текущий пароль неверен'
+                });
+            }
+
+            // Validate new password
+            if (newPassword.length < 6) {
+                console.log('New password too short');
+                return res.status(400).json({
+                    success: false,
+                    message: 'Новый пароль должен быть не менее 6 символов'
+                });
+            }
+
+            console.log('Updating password...');
+            // Update password
+            user.password = newPassword;
+        } else {
+            console.log('No password change requested');
+        }
+
+        // Handle profile information update
+        if (fullName !== undefined) {
+            if (!fullName.trim()) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Имя и фамилия обязательны'
+                });
+            }
+            user.fullName = fullName.trim();
+        }
+
+        if (email !== undefined) {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Пожалуйста, введите корректный email адрес'
+                });
+            }
+
+            // Check if email is already taken by another user
+            const existingUser = await User.findOne({
+                email: email.toLowerCase(),
+                _id: { $ne: user._id }
+            });
+            if (existingUser) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Этот email уже используется другим пользователем'
+                });
+            }
+
+            user.email = email.toLowerCase();
+        }
+
+        // Save updated user
+        await user.save();
+
+        console.log('Profile updated for user:', {
+            userId: user._id,
+            email: user.email,
+            fullName: user.fullName,
+            timestamp: new Date().toISOString()
+        });
+
+        // Return success response with updated user data
+        res.json({
+            success: true,
+            message: 'Профиль успешно обновлен',
+            user: {
+                id: user._id,
+                email: user.email,
+                fullName: user.fullName,
+                role: user.role
+            }
+        });
+
+    } catch (error) {
+        console.error('Profile update error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Ошибка при обновлении профиля'
+        });
+    }
+});
+
 // Start server
 app.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT}`);
@@ -639,6 +802,8 @@ app.listen(PORT, () => {
     console.log('API endpoints:');
     console.log('  POST /api/register');
     console.log('  POST /api/login');
+    console.log('  GET  /api/users/debug (debug users)');
+    console.log('  PUT  /api/users/profile (update user profile)');
     console.log('  POST /api/orders (create order with photos)');
     console.log('  GET  /api/orders (get orders)');
     console.log('  GET  /api/orders/:id (get single order)');
