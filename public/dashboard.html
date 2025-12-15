@@ -376,6 +376,30 @@
             box-shadow: 0 0 0 3px rgba(204, 119, 34, 0.1);
         }
 
+        .form-select {
+            width: 100%;
+            padding: 1rem;
+            border: 2px solid #E0E0E0;
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 1rem;
+            background-color: #FFFFFF;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23666' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 1rem center;
+            background-size: 1rem;
+            padding-right: 3rem;
+        }
+
+        .form-select:focus {
+            outline: none;
+            border-color: #CC7722;
+            box-shadow: 0 0 0 3px rgba(204, 119, 34, 0.1);
+        }
+
         .file-upload-area {
             border: 2px dashed #E0E0E0;
             border-radius: 8px;
@@ -859,6 +883,14 @@
 
             <form class="order-form">
                 <div class="form-group">
+                    <label for="productType" class="form-label">Тип изделия</label>
+                    <select id="productType" name="productType" class="form-select" required>
+                        <option value="">Выберите тип изделия</option>
+                        <!-- Options will be populated by JavaScript -->
+                    </select>
+                </div>
+
+                <div class="form-group">
                     <label for="orderDescription" class="form-label">Описание заказа</label>
                     <textarea
                         id="orderDescription"
@@ -870,9 +902,10 @@
 
                 <div class="form-group">
                     <label class="form-label">Эскизы дизайна</label>
-                    <div class="file-upload-area">
+                    <div class="file-upload-area" onclick="document.getElementById('photoInput').click()">
                         <div class="upload-icon">📎</div>
                         <div class="upload-text">Перетащите файлы сюда или нажмите для выбора</div>
+                        <input type="file" id="photoInput" name="photos" accept="image/*" multiple style="display: none;">
                     </div>
                 </div>
 
@@ -1115,6 +1148,14 @@
             const userAvatar = document.getElementById('userAvatar');
             const userName = document.getElementById('userName');
             const logoutBtn = document.getElementById('logoutBtn');
+
+            // Order form elements
+            const orderForm = document.querySelector('.order-form');
+            const productTypeSelect = document.getElementById('productType');
+            const orderDescription = document.getElementById('orderDescription');
+            const priceEstimation = document.querySelector('.price-estimation');
+            const priceAmount = document.querySelector('.price-amount');
+            const priceNote = document.querySelector('.price-note');
 
             // Profile modal elements
             const profileModal = document.getElementById('profileModal');
@@ -1394,6 +1435,109 @@
                 localStorage.removeItem('token');
                 window.location.href = '/';
             });
+
+            // Load product types and populate dropdown
+            async function loadProductTypes() {
+                try {
+                    const response = await fetch('/api/product-types');
+                    const result = await response.json();
+
+                    if (result.success) {
+                        const productTypes = result.productTypes;
+
+                        // Clear existing options except the first one
+                        productTypeSelect.innerHTML = '<option value="">Выберите тип изделия</option>';
+
+                        // Add product type options
+                        Object.keys(productTypes).forEach(key => {
+                            const option = document.createElement('option');
+                            option.value = key;
+                            option.textContent = productTypes[key].displayName;
+                            option.dataset.priceRange = productTypes[key].priceRange;
+                            option.dataset.minPrice = productTypes[key].minPrice;
+                            option.dataset.maxPrice = productTypes[key].maxPrice;
+                            productTypeSelect.appendChild(option);
+                        });
+                    } else {
+                        console.error('Failed to load product types:', result.message);
+                        showMessage('error', 'Не удалось загрузить типы изделий', orderForm);
+                    }
+                } catch (error) {
+                    console.error('Error loading product types:', error);
+                    showMessage('error', 'Ошибка при загрузке типов изделий', orderForm);
+                }
+            }
+
+            // Update price estimation based on selected product type
+            function updatePriceEstimation() {
+                const selectedOption = productTypeSelect.options[productTypeSelect.selectedIndex];
+
+                if (selectedOption.value && selectedOption.dataset.priceRange) {
+                    priceAmount.textContent = selectedOption.dataset.priceRange;
+                    priceNote.textContent = 'Точная цена будет рассчитана после согласования деталей';
+                } else {
+                    priceAmount.textContent = 'от 500 BYN';
+                    priceNote.textContent = 'Выберите тип изделия для просмотра примерной стоимости';
+                }
+            }
+
+            // Handle product type change
+            productTypeSelect.addEventListener('change', updatePriceEstimation);
+
+            // Handle order form submission
+            orderForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
+
+                const formData = new FormData();
+                formData.append('clientId', user.id);
+                formData.append('productType', productTypeSelect.value);
+                formData.append('description', orderDescription.value.trim());
+
+                // Add photos if any are selected
+                const photoInput = document.querySelector('input[type="file"]');
+                if (photoInput && photoInput.files.length > 0) {
+                    for (let i = 0; i < photoInput.files.length; i++) {
+                        formData.append('photos', photoInput.files[i]);
+                    }
+                }
+
+                try {
+                    const submitBtn = document.querySelector('.create-order-btn');
+                    submitBtn.disabled = true;
+                    submitBtn.textContent = 'Создание...';
+
+                    const response = await fetch('/api/orders', {
+                        method: 'POST',
+                        body: formData
+                    });
+
+                    const result = await response.json();
+
+                    if (result.success) {
+                        showMessage('success', 'Заказ успешно создан!', orderForm);
+
+                        // Reset form
+                        orderForm.reset();
+                        updatePriceEstimation();
+
+                        // Refresh orders list (you might want to implement this)
+                        // loadOrders();
+
+                    } else {
+                        showMessage('error', result.message || 'Ошибка при создании заказа', orderForm);
+                    }
+                } catch (error) {
+                    console.error('Order creation error:', error);
+                    showMessage('error', 'Произошла ошибка при создании заказа', orderForm);
+                } finally {
+                    const submitBtn = document.querySelector('.create-order-btn');
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Создать заказ';
+                }
+            });
+
+            // Load product types on page load
+            loadProductTypes();
         });
     </script>
 </body>
