@@ -183,7 +183,7 @@ authForm.addEventListener('submit', async function(e) {
                 authForm.reset();
             } else {
                 // Error
-                if (result.message.includes('email')) {
+                if (result.message.includes('email') || result.message.includes('doesn\'t exist') || result.message.includes('зарегистрированы')) {
                     emailError.textContent = result.message;
                     emailError.classList.add('show');
                 } else if (result.message.includes('password')) {
