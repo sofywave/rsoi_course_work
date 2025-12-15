@@ -6,6 +6,8 @@ const multer = require('multer');
 const fs = require('fs');
 const User = require('./models/User');
 const Order = require('./models/Order');
+// Ensure Counter model is registered
+require('./models/Order');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -300,8 +302,17 @@ app.post('/api/orders', uploadPhotos.array('photos', 10), async (req, res) => {
             }));
         }
 
+        // Validate photos
+        if (req.files && req.files.length > 0) {
+            Order.validatePhotos(req.files);
+        }
+
+        // Generate order number
+        const orderNumber = await Order.generateOrderNumber();
+
         // Create new order
         const order = new Order({
+            orderNumber,
             client: clientId,
             description,
             price: price ? parseFloat(price) : undefined,
@@ -309,6 +320,9 @@ app.post('/api/orders', uploadPhotos.array('photos', 10), async (req, res) => {
             productType,
             photos
         });
+
+        // Populate price fields
+        Order.populatePriceFields(order);
 
         await order.save();
 
