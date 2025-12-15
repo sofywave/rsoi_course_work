@@ -934,97 +934,15 @@
                             <th>Дата</th>
                         </tr>
                     </thead>
-                    <tbody>
-                        <tr>
-                            <td class="order-number">#00123</td>
-                            <td class="order-description">Керамическая кружка с индивидуальным дизайном, размер 300ml</td>
-                            <td><span class="status-badge status-completed">выполнен</span></td>
-                            <td class="order-date">15.12.2025</td>
-                        </tr>
-                        <tr>
-                            <td class="order-number">#00124</td>
-                            <td class="order-description">Деревянная подставка для книг с гравировкой, размер 20x15cm</td>
-                            <td><span class="status-badge status-progress">в работе</span></td>
-                            <td class="order-date">20.12.2025</td>
-                        </tr>
-                        <tr>
-                            <td class="order-number">#00125</td>
-                            <td class="order-description">Текстильная сумка с вышивкой логотипа компании</td>
-                            <td><span class="status-badge status-new">новый</span></td>
-                            <td class="order-date">22.12.2025</td>
-                        </tr>
-                        <tr>
-                            <td class="order-number">#00126</td>
-                            <td class="order-description">Металлическая табличка с гравировкой, размер 10x5cm</td>
-                            <td><span class="status-badge status-completed">выполнен</span></td>
-                            <td class="order-date">10.12.2025</td>
-                        </tr>
-                        <tr>
-                            <td class="order-number">#00127</td>
-                            <td class="order-description">Стеклянная ваза ручной работы, высота 25cm</td>
-                            <td><span class="status-badge status-progress">в работе</span></td>
-                            <td class="order-date">18.12.2025</td>
-                        </tr>
+                    <tbody id="ordersTableBody">
+                        <!-- Orders will be loaded dynamically -->
                     </tbody>
                 </table>
             </div>
 
             <!-- Mobile Cards -->
-            <div class="orders-cards">
-                <div class="order-card">
-                    <div class="card-header">
-                        <span class="card-title">#00123</span>
-                        <span class="status-badge status-completed">выполнен</span>
-                    </div>
-                    <div class="card-description">Керамическая кружка с индивидуальным дизайном, размер 300ml</div>
-                    <div class="card-footer">
-                        <span class="order-date">15.12.2025</span>
-                    </div>
-                </div>
-
-                <div class="order-card">
-                    <div class="card-header">
-                        <span class="card-title">#00124</span>
-                        <span class="status-badge status-progress">в работе</span>
-                    </div>
-                    <div class="card-description">Деревянная подставка для книг с гравировкой, размер 20x15cm</div>
-                    <div class="card-footer">
-                        <span class="order-date">20.12.2025</span>
-                    </div>
-                </div>
-
-                <div class="order-card">
-                    <div class="card-header">
-                        <span class="card-title">#00125</span>
-                        <span class="status-badge status-new">новый</span>
-                    </div>
-                    <div class="card-description">Текстильная сумка с вышивкой логотипа компании</div>
-                    <div class="card-footer">
-                        <span class="order-date">22.12.2025</span>
-                    </div>
-                </div>
-
-                <div class="order-card">
-                    <div class="card-header">
-                        <span class="card-title">#00126</span>
-                        <span class="status-badge status-completed">выполнен</span>
-                    </div>
-                    <div class="card-description">Металлическая табличка с гравировкой, размер 10x5cm</div>
-                    <div class="card-footer">
-                        <span class="order-date">10.12.2025</span>
-                    </div>
-                </div>
-
-                <div class="order-card">
-                    <div class="card-header">
-                        <span class="card-title">#00127</span>
-                        <span class="status-badge status-progress">в работе</span>
-                    </div>
-                    <div class="card-description">Стеклянная ваза ручной работы, высота 25cm</div>
-                    <div class="card-footer">
-                        <span class="order-date">18.12.2025</span>
-                    </div>
-                </div>
+            <div class="orders-cards" id="ordersCardsContainer">
+                <!-- Orders will be loaded dynamically -->
             </div>
         </section>
     </main>
@@ -1520,8 +1438,8 @@
                         orderForm.reset();
                         updatePriceEstimation();
 
-                        // Refresh orders list (you might want to implement this)
-                        // loadOrders();
+                        // Refresh orders list
+                        loadOrders();
 
                     } else {
                         showMessage('error', result.message || 'Ошибка при создании заказа', orderForm);
@@ -1536,8 +1454,127 @@
                 }
             });
 
-            // Load product types on page load
+            // Load orders and display them
+            async function loadOrders() {
+                try {
+                    const response = await fetch('/api/orders', {
+                        headers: {
+                            'user-id': user.id,
+                            'user-role': user.role
+                        }
+                    });
+
+                    const result = await response.json();
+
+                    if (result.success) {
+                        displayOrders(result.orders);
+                    } else {
+                        console.error('Failed to load orders:', result.message);
+                        displayOrders([]); // Show empty state
+                    }
+                } catch (error) {
+                    console.error('Error loading orders:', error);
+                    displayOrders([]); // Show empty state
+                }
+            }
+
+            // Display orders in both table and cards format
+            function displayOrders(orders) {
+                const tableBody = document.getElementById('ordersTableBody');
+                const cardsContainer = document.getElementById('ordersCardsContainer');
+
+                // Clear existing content
+                tableBody.innerHTML = '';
+                cardsContainer.innerHTML = '';
+
+                if (orders.length === 0) {
+                    // Show empty state for table
+                    const emptyRow = document.createElement('tr');
+                    emptyRow.innerHTML = `
+                        <td colspan="4" style="text-align: center; padding: 2rem; color: #666;">
+                            У вас пока нет заказов. Создайте свой первый заказ выше.
+                        </td>
+                    `;
+                    tableBody.appendChild(emptyRow);
+
+                    // Show empty state for cards
+                    const emptyCard = document.createElement('div');
+                    emptyCard.style.textAlign = 'center';
+                    emptyCard.style.padding = '2rem';
+                    emptyCard.style.color = '#666';
+                    emptyCard.textContent = 'У вас пока нет заказов. Создайте свой первый заказ выше.';
+                    cardsContainer.appendChild(emptyCard);
+                    return;
+                }
+
+                // Populate table rows
+                orders.forEach(order => {
+                    const row = document.createElement('tr');
+                    const statusClass = getStatusClass(order.status);
+                    const formattedDate = order.createdAt ? new Date(order.createdAt).toLocaleDateString('ru-RU') : '';
+
+                    row.innerHTML = `
+                        <td class="order-number">${order.orderNumber || `#${order.id.slice(-4)}`}</td>
+                        <td class="order-description">${order.description || 'Без описания'}</td>
+                        <td><span class="status-badge ${statusClass}">${getStatusText(order.status)}</span></td>
+                        <td class="order-date">${formattedDate}</td>
+                    `;
+                    tableBody.appendChild(row);
+                });
+
+                // Populate mobile cards
+                orders.forEach(order => {
+                    const card = document.createElement('div');
+                    card.className = 'order-card';
+
+                    const statusClass = getStatusClass(order.status);
+                    const formattedDate = order.createdAt ? new Date(order.createdAt).toLocaleDateString('ru-RU') : '';
+
+                    card.innerHTML = `
+                        <div class="card-header">
+                            <span class="card-title">${order.orderNumber || `#${order.id.slice(-4)}`}</span>
+                            <span class="status-badge ${statusClass}">${getStatusText(order.status)}</span>
+                        </div>
+                        <div class="card-description">${order.description || 'Без описания'}</div>
+                        <div class="card-footer">
+                            <span class="order-date">${formattedDate}</span>
+                        </div>
+                    `;
+                    cardsContainer.appendChild(card);
+                });
+            }
+
+            // Helper function to get status class
+            function getStatusClass(status) {
+                const statusMap = {
+                    'new': 'status-new',
+                    'clarification': 'status-new',
+                    'in_progress': 'status-progress',
+                    'awaiting_payment': 'status-progress',
+                    'completed': 'status-completed',
+                    'delivered': 'status-completed',
+                    'cancelled': 'status-new'
+                };
+                return statusMap[status] || 'status-new';
+            }
+
+            // Helper function to get status text in Russian
+            function getStatusText(status) {
+                const statusTextMap = {
+                    'new': 'новый',
+                    'clarification': 'уточнение',
+                    'in_progress': 'в работе',
+                    'awaiting_payment': 'ожидает оплаты',
+                    'completed': 'выполнен',
+                    'delivered': 'доставлен',
+                    'cancelled': 'отменен'
+                };
+                return statusTextMap[status] || status;
+            }
+
+            // Load product types and orders on page load
             loadProductTypes();
+            loadOrders();
         });
     </script>
 </body>
