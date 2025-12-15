@@ -71,7 +71,7 @@ const photoFilter = (req, file, cb) => {
     if (allowedMimes.includes(file.mimetype)) {
         cb(null, true);
     } else {
-        cb(new Error('Invalid file type. Only JPEG, PNG, GIF, and WebP images are allowed.'), false);
+        cb(new Error('Неподдерживаемый файл. Только JPEG, PNG, GIF, и WebP изображения разрешены.'), false);
     }
 };
 
@@ -108,14 +108,14 @@ app.post('/api/register', async (req, res) => {
         if (!name || !email || !password) {
             return res.status(400).json({
                 success: false,
-                message: 'All fields are required'
+                message: 'Все поля обязательны для заполнения'
             });
         }
 
         if (password.length < 6) {
             return res.status(400).json({
                 success: false,
-                message: 'Password must be at least 6 characters long'
+                message: 'Пароль должен быть не менее 6 символов'
             });
         }
 
@@ -124,7 +124,7 @@ app.post('/api/register', async (req, res) => {
         if (!emailRegex.test(email)) {
             return res.status(400).json({
                 success: false,
-                message: 'Please provide a valid email address'
+                message: 'Пожалуйста, введите корретный email адрес'
             });
         }
 
@@ -133,7 +133,7 @@ app.post('/api/register', async (req, res) => {
         if (existingUser) {
             return res.status(400).json({
                 success: false,
-                message: 'User with this email already exists'
+                message: 'Пользователь с таким email уже существует'
             });
         }
 
@@ -159,7 +159,7 @@ app.post('/api/register', async (req, res) => {
         // Return success response with token (same format as login)
         res.status(201).json({
             success: true,
-            message: 'Registration successful!',
+            message: 'Регистрация успешна!',
             user: {
                 id: user._id,
                 email: user.email,
@@ -173,7 +173,7 @@ app.post('/api/register', async (req, res) => {
         console.error('Registration error:', error);
         res.status(500).json({
             success: false,
-            message: 'Server error during registration'
+            message: 'Ошибка при регистрации'
         });
     }
 });
@@ -188,7 +188,7 @@ app.post('/api/login', async (req, res) => {
         if (!email || !password) {
             return res.status(400).json({
                 success: false,
-                message: 'Email and password are required'
+                message: 'Необходимо ввести email и пароль'
             });
         }
 
@@ -197,7 +197,7 @@ app.post('/api/login', async (req, res) => {
         if (!user) {
             return res.status(401).json({
                 success: false,
-                message: 'Invalid email or password'
+                message: 'Вы еще не зарегистрированы. Создайте учетную запись, чтобы войти в систему.'
             });
         }
 
