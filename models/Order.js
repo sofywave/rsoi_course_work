@@ -76,22 +76,6 @@ const OrderSchema = new mongoose.Schema({
     deadline: {
         type: Date
     },
-    attachments: [{
-        filename: String,
-        originalName: String,
-        mimetype: String,
-        size: Number,
-        path: String,
-        type: {
-            type: String,
-            enum: ['photo', 'document', 'other'],
-            default: 'other'
-        },
-        uploadedAt: {
-            type: Date,
-            default: Date.now
-        }
-    }],
     photos: [{
         filename: String,
         originalName: String,
