@@ -1,5 +1,26 @@
 const mongoose = require('mongoose');
 
+// Price mapping for product types
+const PRODUCT_PRICE_MAPPING = {
+    'настенные часы': { range: '165-495 BYN', min: 165, max: 495 },
+    'каминные часы': { range: '1 320 BYN', min: 1320, max: 1320 },
+    'песочные часы': { range: '100-950 BYN', min: 100, max: 950 },
+    'настольные часы': { range: '85-200 BYN', min: 85, max: 200 },
+    'письменный набор': { range: '115-990 BYN', min: 115, max: 990 },
+    'метеостанция': { range: '165-420 BYN', min: 165, max: 420 },
+    'поддон для бумаг': { range: '99-230 BYN', min: 99, max: 230 },
+    'карандашница': { range: '66 BYN', min: 66, max: 66 },
+    'флагшток': { range: '45-75 BYN', min: 45, max: 75 },
+    'вечный календарь': { range: '200 BYN', min: 200, max: 200 },
+    'подставка под календарь': { range: '66 BYN', min: 66, max: 66 },
+    'бювар': { range: '130-400 BYN', min: 130, max: 400 },
+    'плакетки (наградные доски)': { range: '65-330 BYN', min: 65, max: 330 },
+    'настенные панно': { range: '85-990 BYN', min: 85, max: 990 },
+    'ключницы': { range: '150-165 BYN', min: 150, max: 165 },
+    'икона': { range: '400-600 BYN', min: 400, max: 600 },
+    'сувенирная упаковка': { range: '60-220 BYN', min: 60, max: 220 }
+};
+
 const OrderSchema = new mongoose.Schema({
     orderNumber: {
         type: String,
@@ -32,6 +53,25 @@ const OrderSchema = new mongoose.Schema({
     price: {
         type: Number,
         min: [0, 'Price cannot be negative']
+    },
+    productType: {
+        type: String,
+        enum: {
+            values: Object.keys(PRODUCT_PRICE_MAPPING),
+            message: `Product type must be one of: ${Object.keys(PRODUCT_PRICE_MAPPING).join(', ')}`
+        }
+    },
+    priceRange: {
+        type: String,
+        trim: true
+    },
+    priceMin: {
+        type: Number,
+        min: [0, 'Minimum price cannot be negative']
+    },
+    priceMax: {
+        type: Number,
+        min: [0, 'Maximum price cannot be negative']
     },
     deadline: {
         type: Date
@@ -123,6 +163,19 @@ OrderSchema.pre('save', function(next) {
     next();
 });
 
+// Pre-save middleware to populate price fields based on productType
+OrderSchema.pre('save', function(next) {
+    if (this.productType && this.isModified('productType')) {
+        const priceData = PRODUCT_PRICE_MAPPING[this.productType];
+        if (priceData) {
+            this.priceRange = priceData.range;
+            this.priceMin = priceData.min;
+            this.priceMax = priceData.max;
+        }
+    }
+    next();
+});
+
 // Virtual for formatted deadline
 OrderSchema.virtual('formattedDeadline').get(function() {
     if (this.deadline) {
@@ -192,6 +245,11 @@ OrderSchema.statics.findByClient = function(clientId) {
 // Static method to find orders by master
 OrderSchema.statics.findByMaster = function(masterId) {
     return this.find({ assignedTo: masterId }).populate('client', 'fullName email');
+};
+
+// Static method to get product price mapping
+OrderSchema.statics.getProductPriceMapping = function() {
+    return PRODUCT_PRICE_MAPPING;
 };
 
 // Index for better query performance
