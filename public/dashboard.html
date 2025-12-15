@@ -63,6 +63,13 @@
             font-weight: 700;
         }
 
+        .header-logo-image {
+            width: 70px;
+            height: 70px;
+            object-fit: contain;
+            border-radius: 8px;
+        }
+
         .header-nav {
             display: flex;
             align-items: center;
@@ -328,7 +335,8 @@
             display: flex;
             flex-direction: column;
             gap: 1.5rem;
-            max-width: 500px;
+            width: 100%;
+            max-width: none;
         }
 
         .form-group {
@@ -623,6 +631,11 @@
                 font-size: 1.2rem;
             }
 
+            .header-logo-image {
+                width: 60px;
+                height: 60px;
+            }
+
             .user-info {
                 font-size: 0.9rem;
             }
@@ -630,6 +643,11 @@
             .logout-btn {
                 padding: 6px 12px;
                 font-size: 0.8rem;
+            }
+
+            .header-logo-image {
+                width: 55px;
+                height: 55px;
             }
 
             .dashboard-section {
@@ -663,7 +681,7 @@
     <!-- Header -->
     <header class="dashboard-header">
         <div class="header-branding">
-            <div class="header-logo">🎨</div>
+            <img src="images/лого без фона.png" alt="ООО «Панна сувенир»" class="header-logo-image">
             <h1 class="company-name-header">ООО «Панна сувенир»</h1>
         </div>
         <nav class="header-nav">
