@@ -124,11 +124,12 @@ const CounterSchema = new mongoose.Schema({
     }
 });
 
+// Export Counter model so it gets registered with Mongoose
 const Counter = mongoose.model('Counter', CounterSchema);
 
-// Pre-save middleware to generate order number
-OrderSchema.pre('save', async function() {
-    if (this.isNew) {
+// Static method to generate order number
+OrderSchema.statics.generateOrderNumber = async function() {
+    try {
         const currentYear = new Date().getFullYear();
 
         // Find and increment the counter for current year
@@ -140,41 +141,42 @@ OrderSchema.pre('save', async function() {
 
         // Generate order number: ЗК-ГГГГ-ХХХ
         const sequenceStr = counter.sequence.toString().padStart(3, '0');
-        this.orderNumber = `ЗК-${currentYear}-${sequenceStr}`;
+        return `ЗК-${currentYear}-${sequenceStr}`;
+    } catch (error) {
+        console.error('Error generating order number:', error);
+        throw error;
     }
-});
+};
 
-// Pre-save validation for photos
-OrderSchema.pre('save', function(next) {
-    // Validate photo attachments
-    if (this.photos && this.photos.length > 0) {
+// Static method to validate photos
+OrderSchema.statics.validatePhotos = function(photos) {
+    if (photos && photos.length > 0) {
         const allowedMimes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
         const maxSize = 5 * 1024 * 1024; // 5MB
 
-        for (const photo of this.photos) {
+        for (const photo of photos) {
             if (!allowedMimes.includes(photo.mimetype)) {
-                return next(new Error(`Invalid file type for photo: ${photo.mimetype}. Only JPEG, PNG, GIF, and WebP are allowed.`));
+                throw new Error(`Invalid file type for photo: ${photo.mimetype}. Only JPEG, PNG, GIF, and WebP are allowed.`);
             }
             if (photo.size > maxSize) {
-                return next(new Error(`Photo file size too large: ${photo.originalName}. Maximum size is 5MB.`));
+                throw new Error(`Photo file size too large: ${photo.originalName}. Maximum size is 5MB.`);
             }
         }
     }
-    next();
-});
+};
 
-// Pre-save middleware to populate price fields based on productType
-OrderSchema.pre('save', function(next) {
-    if (this.productType && this.isModified('productType')) {
-        const priceData = PRODUCT_PRICE_MAPPING[this.productType];
+// Static method to populate price fields
+OrderSchema.statics.populatePriceFields = function(order) {
+    if (order.productType) {
+        const priceData = PRODUCT_PRICE_MAPPING[order.productType];
         if (priceData) {
-            this.priceRange = priceData.range;
-            this.priceMin = priceData.min;
-            this.priceMax = priceData.max;
+            order.priceRange = priceData.range;
+            order.priceMin = priceData.min;
+            order.priceMax = priceData.max;
         }
     }
-    next();
-});
+    return order;
+};
 
 // Virtual for formatted deadline
 OrderSchema.virtual('formattedDeadline').get(function() {
@@ -260,4 +262,5 @@ OrderSchema.index({ status: 1 });
 OrderSchema.index({ deadline: 1 });
 OrderSchema.index({ createdAt: -1 });
 
+// Export Order model
 module.exports = mongoose.model('Order', OrderSchema);
