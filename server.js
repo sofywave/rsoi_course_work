@@ -854,6 +854,82 @@ app.get('/api/manager/users', async (req, res) => {
     }
 });
 
+// PATCH /api/users/:id/role - Update user role (admin/manager only)
+app.patch('/api/users/:id/role', async (req, res) => {
+    console.log('Role update request received:', req.body);
+    console.log('Headers:', { 'user-id': req.headers['user-id'], 'user-role': req.headers['user-role'] });
+    try {
+        // Check if user has manager/admin permissions
+        const userRole = req.headers['user-role'];
+        if (userRole !== 'admin' && userRole !== 'manager') {
+            return res.status(403).json({
+                success: false,
+                message: 'Access denied. Manager or admin role required.'
+            });
+        }
+
+        const userId = req.params.id;
+        const { role } = req.body;
+
+        // Validate role
+        const validRoles = ['client', 'master', 'admin'];
+        if (!validRoles.includes(role)) {
+            return res.status(400).json({
+                success: false,
+                message: 'Недопустимая роль пользователя'
+            });
+        }
+
+        // Find and update user
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: 'Пользователь не найден'
+            });
+        }
+
+        // Prevent changing admin role unless the current user is admin
+        if (user.role === 'admin' && userRole !== 'admin') {
+            return res.status(403).json({
+                success: false,
+                message: 'Только администратор может изменять роли других администраторов'
+            });
+        }
+
+        // Update user role
+        user.role = role;
+        await user.save();
+
+        console.log('User role updated:', {
+            userId: user._id,
+            email: user.email,
+            oldRole: user.role,
+            newRole: role,
+            updatedBy: req.headers['user-id'],
+            timestamp: new Date().toISOString()
+        });
+
+        res.json({
+            success: true,
+            message: 'Роль пользователя успешно обновлена',
+            user: {
+                id: user._id,
+                email: user.email,
+                fullName: user.fullName,
+                role: user.role
+            }
+        });
+
+    } catch (error) {
+        console.error('Role update error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Ошибка при обновлении роли пользователя'
+        });
+    }
+});
+
 // PUT /api/users/profile - Update user profile
 app.put('/api/users/profile', async (req, res) => {
     console.log('Profile update request received:', req.body);
@@ -1005,7 +1081,8 @@ app.listen(PORT, () => {
     console.log('  GET  /api/users/debug (debug users)');
     console.log('  GET  /api/users/masters (get all masters)');
     console.log('  GET  /api/manager/users (get all users for manager)');
-    console.log('  PUT  /api/users/profile (update user profile)');
+    console.log('  PATCH /api/users/:id/role (update user role)');
+    console.log('  PUT   /api/users/profile (update user profile)');
     console.log('  POST /api/orders (create order with photos)');
     console.log('  GET  /api/orders (get orders)');
     console.log('  GET  /api/orders/:id (get single order)');
