@@ -277,6 +277,14 @@ app.post('/api/orders', uploadPhotos.array('photos', 10), async (req, res) => {
     try {
         const { clientId, description, price, deadline, productType } = req.body;
 
+        console.log('Order creation request:', {
+            clientId,
+            description,
+            productType,
+            filesCount: req.files ? req.files.length : 0,
+            files: req.files ? req.files.map(f => ({ originalName: f.originalname, size: f.size })) : []
+        });
+
         // Basic validation
         if (!clientId) {
             return res.status(400).json({
@@ -287,6 +295,12 @@ app.post('/api/orders', uploadPhotos.array('photos', 10), async (req, res) => {
 
         // Verify client exists and has client role
         const client = await User.findById(clientId);
+        console.log('Client lookup result:', {
+            clientId,
+            clientFound: !!client,
+            clientRole: client ? client.role : 'not found'
+        });
+
         if (!client || client.role !== 'client') {
             return res.status(400).json({
                 success: false,
@@ -767,6 +781,23 @@ app.get('/api/users/debug', async (req, res) => {
     }
 });
 
+// GET /api/users/masters - Get all masters for assignment
+app.get('/api/users/masters', async (req, res) => {
+    try {
+        const masters = await User.find({ role: 'master' }, '_id fullName');
+        res.json({
+            success: true,
+            masters: masters.map(m => ({
+                id: m._id,
+                fullName: m.fullName
+            }))
+        });
+    } catch (error) {
+        console.error('Error fetching masters:', error);
+        res.status(500).json({ success: false, message: 'Error fetching masters' });
+    }
+});
+
 // PUT /api/users/profile - Update user profile
 app.put('/api/users/profile', async (req, res) => {
     console.log('Profile update request received:', req.body);
@@ -916,6 +947,7 @@ app.listen(PORT, () => {
     console.log('  POST /api/register');
     console.log('  POST /api/login');
     console.log('  GET  /api/users/debug (debug users)');
+    console.log('  GET  /api/users/masters (get all masters)');
     console.log('  PUT  /api/users/profile (update user profile)');
     console.log('  POST /api/orders (create order with photos)');
     console.log('  GET  /api/orders (get orders)');
