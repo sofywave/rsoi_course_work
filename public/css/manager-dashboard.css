@@ -452,6 +452,81 @@ main.orders-top {
     font-weight: bold;
 }
 
+/* Users Management Styles */
+.users-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    padding: 1rem;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    gap: 1rem;
+}
+
+.users-container {
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    overflow-x: auto;
+}
+
+.no-users-message {
+    text-align: center;
+    padding: 2rem;
+    color: #666;
+}
+
+.users-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 0;
+}
+
+.users-table th,
+.users-table td {
+    padding: 0.75rem;
+    text-align: left;
+    border-bottom: 1px solid #eee;
+}
+
+.users-table th {
+    background-color: #f8f9fa;
+    font-weight: 600;
+    color: #333;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.users-table th:last-child {
+    text-align: center;
+}
+
+.users-table tr:hover {
+    background-color: #f8f9fa;
+}
+
+.users-table .user-role {
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    text-transform: capitalize;
+}
+
+.role-client { background-color: #e3f2fd; color: #1976d2; }
+.role-master { background-color: #e8f5e8; color: #388e3c; }
+.role-manager { background-color: #fff3e0; color: #f57c00; }
+.role-admin { background-color: #ffebee; color: #d32f2f; }
+
+.users-table .actions {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: center;
+    align-items: center;
+}
+
 /* Modal Styles */
 .modal {
     display: none; /* Hidden by default */
