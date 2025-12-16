@@ -29,6 +29,9 @@ h1, h2, h3 {
     justify-content: space-between;
     align-items: center;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    position: sticky;
+    top: 0;
+    z-index: 800;
 }
 
 .logo-section {
@@ -94,6 +97,7 @@ h1, h2, h3 {
     border: none;
     padding: 8px 16px;
     border-radius: 6px;
+    font-family: 'Roboto', sans-serif;
     font-size: 0.9rem;
     font-weight: 600;
     cursor: pointer;
@@ -130,6 +134,7 @@ nav {
     border: 2px solid #E0E0E0;
     padding: 0.75rem 1.5rem;
     cursor: pointer;
+    font-family: 'Roboto', sans-serif;
     font-size: 0.9rem;
     font-weight: 500;
     transition: all 0.3s ease;
@@ -164,6 +169,11 @@ main {
     min-height: calc(100vh - 160px);
 }
 
+main.orders-top {
+    margin-top: 80px;
+    min-height: calc(100vh - 80px);
+}
+
 .content-section {
     display: none;
     background-color: #F5F5F5;
@@ -175,6 +185,10 @@ main {
 
 .content-section.active {
     display: block;
+}
+
+#orders.active {
+    margin-top: 0;
 }
 
 .section-title {
@@ -300,6 +314,7 @@ main {
     padding: 0.5rem 1rem;
     border-radius: 4px;
     cursor: pointer;
+    font-family: 'Roboto', sans-serif;
     font-size: 0.9rem;
     transition: background-color 0.3s;
 }
@@ -376,6 +391,10 @@ main {
     z-index: 10;
 }
 
+.orders-table th:last-child {
+    text-align: center;
+}
+
 .orders-table tr:hover {
     background-color: #f8f9fa;
 }
@@ -399,6 +418,8 @@ main {
 .orders-table .actions {
     display: flex;
     gap: 0.5rem;
+    justify-content: center;
+    align-items: center;
 }
 
 .action-btn {
@@ -406,6 +427,7 @@ main {
     border: none;
     border-radius: 4px;
     cursor: pointer;
+    font-family: 'Roboto', sans-serif;
     font-size: 0.8rem;
     text-decoration: none;
     display: inline-block;
@@ -464,6 +486,7 @@ main {
     position: absolute;
     top: 10px;
     right: 20px;
+    font-family: 'Roboto', sans-serif;
     font-size: 28px;
     font-weight: bold;
     cursor: pointer;
@@ -575,7 +598,7 @@ main {
 .info-row {
     display: flex;
     gap: 0.5rem;
-    align-items: flex-start;
+    align-items: center;
 }
 
 .info-row strong {
@@ -663,11 +686,13 @@ main {
 .modal-actions {
     display: flex;
     justify-content: center;
+    gap: 2rem;
     margin-top: 2rem;
     padding-top: 1.5rem;
     border-top: 1px solid #eee;
 }
 
+.action-btn.primary,
 .action-btn.secondary {
     background-color: #6c757d;
     color: white;
@@ -680,6 +705,7 @@ main {
     transition: all 0.3s ease;
 }
 
+.action-btn.primary:hover,
 .action-btn.secondary:hover {
     background-color: #5a6268;
     transform: translateY(-1px);
@@ -918,4 +944,237 @@ main {
         max-width: 95vw;
         max-height: 70vh;
     }
+}
+
+/* Success message styling */
+.save-success-message {
+    color: #28a745;
+    font-size: 14px;
+    font-weight: 600;
+    margin-top: 25px;
+    text-align: center;
+    padding: 12px 0;
+    background-color: rgba(40, 167, 69, 0.1);
+    border-radius: 6px;
+    animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Profile Modal Styles */
+.profile-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 3000;
+    animation: fadeIn 0.3s ease;
+}
+
+.profile-modal.show {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.profile-modal-content {
+    background-color: white;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    max-width: 500px;
+    width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
+    animation: slideUp 0.3s ease;
+}
+
+.profile-modal-header {
+    padding: 1.5rem 2rem;
+    border-bottom: 1px solid #E0E0E0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.profile-modal-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #000000;
+    margin: 0;
+}
+
+.profile-modal-close {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    color: #666666;
+    cursor: pointer;
+    padding: 0;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+}
+
+.profile-modal-close:hover {
+    background-color: #F5F5F5;
+    color: #333333;
+}
+
+.profile-modal-body {
+    padding: 2rem;
+}
+
+.profile-section-modal {
+    margin-bottom: 2rem;
+}
+
+.profile-section-title {
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: #000000;
+}
+
+.form-group-modal {
+    margin-bottom: 1.5rem;
+}
+
+.form-label-modal {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    color: #333333;
+    font-size: 0.9rem;
+}
+
+.form-input-modal {
+    width: 100%;
+    padding: 0.75rem;
+    border: 2px solid #E0E0E0;
+    border-radius: 6px;
+    font-family: inherit;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    background-color: #FFFFFF;
+}
+
+.form-input-modal:focus {
+    outline: none;
+    border-color: #CC7722;
+    box-shadow: 0 0 0 3px rgba(204, 119, 34, 0.1);
+}
+
+.profile-form-modal,
+.password-form-modal {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.password-change-section-modal {
+    border-top: 1px solid #E0E0E0;
+    padding-top: 2rem;
+}
+
+.profile-update-btn-modal,
+.password-update-btn-modal {
+    background: linear-gradient(135deg, #CC7722 0%, #B8651A 100%);
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 6px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    align-self: flex-start;
+    margin-top: 0.5rem;
+}
+
+.profile-update-btn-modal:hover,
+.password-update-btn-modal:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(204, 119, 34, 0.3);
+}
+
+.profile-update-btn-modal:disabled,
+.password-update-btn-modal:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* Message styles for profile modal */
+.message {
+    padding: 0.75rem 1rem;
+    border-radius: 6px;
+    margin-bottom: 1rem;
+    font-size: 0.9rem;
+    font-weight: 500;
+    animation: slideDown 0.3s ease;
+}
+
+.message.success {
+    background-color: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.message.error {
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+.message.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Make user name clickable */
+.user-name-clickable {
+    cursor: pointer;
+    transition: color 0.3s ease;
+}
+
+.user-name-clickable:hover {
+    color: #CC7722;
 }
