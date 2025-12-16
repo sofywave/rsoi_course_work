@@ -1,0 +1,857 @@
+/* Client Dashboard Styles */
+
+/* Reset and Base Styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Roboto', sans-serif;
+    background-color: #FFFFFF;
+    color: #333333;
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+
+h1, h2, h3 {
+    font-family: 'Open Sans', sans-serif;
+    color: #000000;
+}
+
+/* Header */
+.dashboard-header {
+    background-color: #FFFFFF;
+    border-bottom: 2px solid #F5F5F5;
+    padding: 1rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+.header-branding {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.header-logo {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #CC7722 0%, #B8651A 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    color: white;
+    box-shadow: 0 2px 8px rgba(204, 119, 34, 0.2);
+}
+
+.company-name-header {
+    font-size: 1.5rem;
+    font-weight: 700;
+}
+
+.header-logo-image {
+    width: 70px;
+    height: 70px;
+    object-fit: contain;
+    border-radius: 8px;
+}
+
+.header-nav {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+}
+
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 500;
+}
+
+.user-name-clickable {
+    cursor: pointer;
+    transition: color 0.3s ease;
+}
+
+.user-name-clickable:hover {
+    color: #CC7722;
+}
+
+.user-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background-color: #CC7722;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.logout-btn {
+    background: linear-gradient(135deg, #CC7722 0%, #B8651A 100%);
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.logout-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(204, 119, 34, 0.3);
+}
+
+/* Contact Manager Button */
+.contact-manager-btn {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #CC7722 0%, #B8651A 100%);
+    border: none;
+    color: white;
+    font-size: 1.5rem;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(204, 119, 34, 0.3);
+    transition: all 0.3s ease;
+    z-index: 1000;
+}
+
+.contact-manager-btn:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 20px rgba(204, 119, 34, 0.4);
+}
+
+/* Contact Modal */
+.contact-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 2000;
+    animation: fadeIn 0.3s ease;
+}
+
+.contact-modal.show {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.contact-modal-content {
+    background-color: white;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    max-width: 500px;
+    width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
+    animation: slideUp 0.3s ease;
+}
+
+.contact-modal-header {
+    padding: 1.5rem 2rem;
+    border-bottom: 1px solid #E0E0E0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.contact-modal-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #000000;
+    margin: 0;
+}
+
+.contact-modal-close {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    color: #666666;
+    cursor: pointer;
+    padding: 0;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+}
+
+.contact-modal-close:hover {
+    background-color: #F5F5F5;
+    color: #333333;
+}
+
+.contact-modal-body {
+    padding: 2rem;
+}
+
+.contact-form-group {
+    margin-bottom: 1.5rem;
+}
+
+.contact-form-label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    color: #333333;
+}
+
+.contact-form-input,
+.contact-form-textarea {
+    width: 100%;
+    padding: 0.75rem;
+    border: 2px solid #E0E0E0;
+    border-radius: 6px;
+    font-family: inherit;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    background-color: #FFFFFF;
+}
+
+.contact-form-input:focus,
+.contact-form-textarea:focus {
+    outline: none;
+    border-color: #CC7722;
+    box-shadow: 0 0 0 3px rgba(204, 119, 34, 0.1);
+}
+
+.contact-form-textarea {
+    resize: vertical;
+    min-height: 120px;
+}
+
+.contact-form-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-end;
+    margin-top: 2rem;
+}
+
+.contact-btn-secondary {
+    padding: 0.75rem 1.5rem;
+    background-color: #F5F5F5;
+    color: #666666;
+    border: 2px solid #E0E0E0;
+    border-radius: 6px;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.contact-btn-secondary:hover {
+    background-color: #E0E0E0;
+    color: #333333;
+}
+
+.contact-btn-primary {
+    padding: 0.75rem 1.5rem;
+    background: linear-gradient(135deg, #CC7722 0%, #B8651A 100%);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-block;
+    text-align: center;
+}
+
+.contact-btn-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(204, 119, 34, 0.3);
+    color: white;
+    text-decoration: none;
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* Main Layout */
+.dashboard-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    min-height: calc(100vh - 80px);
+    gap: 0;
+}
+
+.dashboard-section {
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Order Creation Form */
+.order-create-section {
+    background-color: #F9F9F9;
+    border-right: 1px solid #E0E0E0;
+}
+
+.section-title {
+    font-size: 1.8rem;
+    font-weight: 600;
+    margin-bottom: 2rem;
+    color: #000000;
+}
+
+.order-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    width: 100%;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.form-label {
+    font-weight: 500;
+    color: #333333;
+}
+
+.form-textarea {
+    padding: 1rem;
+    border: 2px solid #E0E0E0;
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 1rem;
+    resize: vertical;
+    min-height: 120px;
+    transition: all 0.3s ease;
+    background-color: #FFFFFF;
+}
+
+.form-textarea:focus {
+    outline: none;
+    border-color: #CC7722;
+    box-shadow: 0 0 0 3px rgba(204, 119, 34, 0.1);
+}
+
+.form-select {
+    width: 100%;
+    padding: 1rem;
+    border: 2px solid #E0E0E0;
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 1rem;
+    background-color: #FFFFFF;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    appearance: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23666' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 1rem center;
+    background-size: 1rem;
+    padding-right: 3rem;
+}
+
+.form-select:focus {
+    outline: none;
+    border-color: #CC7722;
+    box-shadow: 0 0 0 3px rgba(204, 119, 34, 0.1);
+}
+
+.file-upload-area {
+    border: 2px dashed #E0E0E0;
+    border-radius: 8px;
+    padding: 2rem;
+    text-align: center;
+    background-color: #FAFAFA;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.file-upload-area:hover {
+    border-color: #CC7722;
+    background-color: rgba(204, 119, 34, 0.02);
+}
+
+.file-upload-area.dragover {
+    border-color: #CC7722;
+    background-color: rgba(204, 119, 34, 0.05);
+    transform: scale(1.02);
+}
+
+.upload-icon {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+    color: #808080;
+}
+
+.upload-text {
+    color: #666666;
+    font-size: 0.9rem;
+}
+
+.price-estimation {
+    background-color: #FFFFFF;
+    border: 1px solid #E0E0E0;
+    border-radius: 8px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.price-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.price-amount {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #CC7722;
+}
+
+.price-note {
+    font-size: 0.8rem;
+    color: #666666;
+    margin-top: 0.5rem;
+}
+
+.create-order-btn {
+    background: linear-gradient(135deg, #CC7722 0%, #B8651A 100%);
+    color: white;
+    border: none;
+    padding: 1rem 2rem;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-top: 1rem;
+}
+
+.create-order-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(204, 119, 34, 0.4);
+}
+
+/* Orders List */
+.orders-list-section {
+    background-color: #FFFFFF;
+}
+
+.orders-table-container {
+    background-color: #FFFFFF;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    overflow: hidden;
+}
+
+.orders-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.orders-table th {
+    background-color: #F5F5F5;
+    padding: 1rem;
+    text-align: left;
+    font-weight: 600;
+    border-bottom: 2px solid #E0E0E0;
+    color: #000000;
+}
+
+.orders-table td {
+    padding: 1rem;
+    border-bottom: 1px solid #F0F0F0;
+    color: #333333;
+}
+
+.order-number {
+    font-weight: 600;
+    color: #CC7722;
+}
+
+.order-description {
+    max-width: 300px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.status-badge {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    text-transform: uppercase;
+}
+
+.status-new {
+    background-color: #E0E0E0;
+    color: #666666;
+}
+
+.status-progress {
+    background-color: #4A90E2;
+    color: white;
+}
+
+.status-completed {
+    background-color: #27AE60;
+    color: white;
+}
+
+.order-date {
+    color: #666666;
+    font-size: 0.9rem;
+}
+
+/* Mobile Cards */
+.orders-cards {
+    display: none;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.order-card {
+    background-color: #FFFFFF;
+    border: 1px solid #E0E0E0;
+    border-radius: 8px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.card-title {
+    font-weight: 600;
+    color: #CC7722;
+}
+
+.card-description {
+    margin-bottom: 1rem;
+    color: #666666;
+    line-height: 1.4;
+}
+
+.card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* Profile Modal Styles */
+.profile-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 3000;
+    animation: fadeIn 0.3s ease;
+}
+
+.profile-modal.show {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.profile-modal-content {
+    background-color: white;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    max-width: 500px;
+    width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
+    animation: slideUp 0.3s ease;
+}
+
+.profile-modal-header {
+    padding: 1.5rem 2rem;
+    border-bottom: 1px solid #E0E0E0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.profile-modal-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #000000;
+    margin: 0;
+}
+
+.profile-modal-close {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    color: #666666;
+    cursor: pointer;
+    padding: 0;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+}
+
+.profile-modal-close:hover {
+    background-color: #F5F5F5;
+    color: #333333;
+}
+
+.profile-modal-body {
+    padding: 2rem;
+}
+
+.profile-section-modal {
+    margin-bottom: 2rem;
+}
+
+.profile-section-title {
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: #000000;
+}
+
+.form-group-modal {
+    margin-bottom: 1.5rem;
+}
+
+.form-label-modal {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    color: #333333;
+    font-size: 0.9rem;
+}
+
+.form-input-modal {
+    width: 100%;
+    padding: 0.75rem;
+    border: 2px solid #E0E0E0;
+    border-radius: 6px;
+    font-family: inherit;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    background-color: #FFFFFF;
+}
+
+.form-input-modal:focus {
+    outline: none;
+    border-color: #CC7722;
+    box-shadow: 0 0 0 3px rgba(204, 119, 34, 0.1);
+}
+
+.profile-form-modal,
+.password-form-modal {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.password-change-section-modal {
+    border-top: 1px solid #E0E0E0;
+    padding-top: 2rem;
+}
+
+.profile-update-btn-modal,
+.password-update-btn-modal {
+    background: linear-gradient(135deg, #CC7722 0%, #B8651A 100%);
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 6px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    align-self: flex-start;
+    margin-top: 0.5rem;
+}
+
+.profile-update-btn-modal:hover,
+.password-update-btn-modal:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(204, 119, 34, 0.3);
+}
+
+.profile-update-btn-modal:disabled,
+.password-update-btn-modal:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+    .dashboard-container {
+        grid-template-columns: 1fr;
+        gap: 0;
+    }
+
+    .order-create-section {
+        border-right: none;
+        border-bottom: 1px solid #E0E0E0;
+    }
+}
+
+@media (max-width: 768px) {
+    .dashboard-header {
+        padding: 1rem;
+        flex-direction: column;
+        gap: 1rem;
+        align-items: stretch;
+    }
+
+    .header-nav {
+        justify-content: space-between;
+        gap: 1rem;
+    }
+
+    .dashboard-section {
+        padding: 1.5rem 1rem;
+    }
+
+    .section-title {
+        font-size: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .order-form {
+        max-width: 100%;
+    }
+
+    .file-upload-area {
+        padding: 1.5rem;
+    }
+
+    .price-estimation {
+        padding: 1rem;
+    }
+
+    /* Switch to cards on mobile */
+    .orders-table-container {
+        display: none;
+    }
+
+    .orders-cards {
+        display: flex;
+    }
+
+    .create-order-btn {
+        width: 100%;
+        padding: 1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .dashboard-header {
+        padding: 0.75rem;
+    }
+
+    .header-branding {
+        gap: 0.5rem;
+    }
+
+    .header-logo {
+        width: 40px;
+        height: 40px;
+        font-size: 1.2rem;
+    }
+
+    .company-name-header {
+        font-size: 1.2rem;
+    }
+
+    .header-logo-image {
+        width: 60px;
+        height: 60px;
+    }
+
+    .user-info {
+        font-size: 0.9rem;
+    }
+
+    .logout-btn {
+        padding: 6px 12px;
+        font-size: 0.8rem;
+    }
+
+    .header-logo-image {
+        width: 55px;
+        height: 55px;
+    }
+
+    .dashboard-section {
+        padding: 1rem 0.75rem;
+    }
+
+    .section-title {
+        font-size: 1.3rem;
+    }
+
+    .form-textarea {
+        min-height: 100px;
+        padding: 0.75rem;
+    }
+
+    .file-upload-area {
+        padding: 1rem;
+    }
+
+    .upload-icon {
+        font-size: 1.5rem;
+    }
+
+    .order-card {
+        padding: 1rem;
+    }
+}
