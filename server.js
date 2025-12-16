@@ -97,6 +97,11 @@ app.get('/dashboard', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'dashboard.html'));
 });
 
+// Route for manager/admin dashboard
+app.get('/manager-dashboard', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'manager-dashboard.html'));
+});
+
 
 // API Routes
 
@@ -480,6 +485,7 @@ app.get('/api/orders/:id', async (req, res) => {
                 price: order.price,
                 deadline: order.deadline,
                 photos: order.photos,
+                attachments: order.attachments,
                 createdAt: order.createdAt,
                 updatedAt: order.updatedAt,
                 isOverdue: order.isOverdue(),
@@ -668,6 +674,75 @@ app.delete('/api/orders/:id/photos/:filename', async (req, res) => {
     }
 });
 
+// Manager API Routes
+
+// GET /api/manager/orders - Get all orders for manager dashboard (admin/manager only)
+app.get('/api/manager/orders', async (req, res) => {
+    try {
+        const userRole = req.headers['user-role']; // In production, get from JWT
+
+        // Check if user has manager/admin permissions
+        if (userRole !== 'admin' && userRole !== 'manager') {
+            return res.status(403).json({
+                success: false,
+                message: 'Access denied. Manager or admin role required.'
+            });
+        }
+
+        const { page = 1, limit = 50, status, clientId, assignedTo } = req.query;
+        const skip = (parseInt(page) - 1) * parseInt(limit);
+
+        let query = {};
+
+        // Optional filters
+        if (status) query.status = status;
+        if (clientId) query.client = clientId;
+        if (assignedTo) query.assignedTo = assignedTo;
+
+        const orders = await Order.find(query)
+            .populate('client', 'fullName email phone')
+            .populate('assignedTo', 'fullName email phone')
+            .sort({ createdAt: -1 })
+            .skip(skip)
+            .limit(parseInt(limit));
+
+        const total = await Order.countDocuments(query);
+
+        res.json({
+            success: true,
+            orders: orders.map(order => ({
+                id: order._id,
+                orderNumber: order.orderNumber,
+                client: order.client,
+                assignedTo: order.assignedTo,
+                status: order.status,
+                description: order.description,
+                price: order.price,
+                deadline: order.deadline,
+                productType: order.productType,
+                photos: order.photos,
+                createdAt: order.createdAt,
+                updatedAt: order.updatedAt,
+                isOverdue: order.isOverdue(),
+                daysUntilDeadline: order.daysUntilDeadline
+            })),
+            pagination: {
+                page: parseInt(page),
+                limit: parseInt(limit),
+                total,
+                pages: Math.ceil(total / parseInt(limit))
+            }
+        });
+
+    } catch (error) {
+        console.error('Get manager orders error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Server error while fetching orders'
+        });
+    }
+});
+
 // User Profile API Routes
 
 // GET /api/users/debug - Debug endpoint to check users
@@ -846,4 +921,5 @@ app.listen(PORT, () => {
     console.log('  PUT  /api/orders/:id (update order)');
     console.log('  POST /api/orders/:id/photos (add photos to order)');
     console.log('  DELETE /api/orders/:id/photos/:filename (remove photo)');
+    console.log('  GET  /api/manager/orders (get all orders for manager)');
 });
