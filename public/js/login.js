@@ -169,15 +169,23 @@ authForm.addEventListener('submit', async function(e) {
                     localStorage.setItem('user', JSON.stringify(result.user));
                     localStorage.setItem('token', result.token);
 
-                    // Redirect to dashboard or main app
-                    window.location.href = '/dashboard'; // You'll need to create this route
+                    // Redirect based on user role
+                    if (result.user.role === 'admin' || result.user.role === 'manager') {
+                        window.location.href = '/manager-dashboard';
+                    } else {
+                        window.location.href = '/dashboard';
+                    }
                 } else {
-                    // After successful registration, automatically log the user in and redirect to dashboard
+                    // After successful registration, automatically log the user in and redirect to appropriate dashboard
                     localStorage.setItem('user', JSON.stringify(result.user));
                     localStorage.setItem('token', result.token);
 
-                    // Redirect to dashboard
-                    window.location.href = '/dashboard';
+                    // Redirect based on user role
+                    if (result.user.role === 'admin' || result.user.role === 'manager') {
+                        window.location.href = '/manager-dashboard';
+                    } else {
+                        window.location.href = '/dashboard';
+                    }
                 }
 
                 authForm.reset();
