@@ -483,6 +483,8 @@ app.get('/api/orders/:id', async (req, res) => {
                 status: order.status,
                 description: order.description,
                 price: order.price,
+                productType: order.productType,
+                priceRange: order.priceRange,
                 deadline: order.deadline,
                 photos: order.photos,
                 attachments: order.attachments,

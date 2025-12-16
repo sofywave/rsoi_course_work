@@ -121,7 +121,354 @@
         </section>
     </main>
 
+    <!-- Order Details Modal -->
+    <div id="orderDetailsModal" class="modal">
+        <div class="modal-content order-details-modal">
+            <span class="close-button" id="closeOrderModal">&times;</span>
+
+            <!-- Loading State -->
+            <div id="orderModalLoading" class="modal-loading" style="display: none;">
+                <p>Загрузка данных заказа...</p>
+            </div>
+
+            <!-- Error State -->
+            <div id="orderModalError" class="modal-error" style="display: none;">
+                <p>Данные не загружены</p>
+            </div>
+
+            <!-- Order Details Content -->
+            <div id="orderModalContent" class="modal-body" style="display: none;">
+                <!-- Basic Details Section -->
+                <div class="order-section">
+                    <h2 class="order-number" id="modalOrderNumber">ЗК-2024-001</h2>
+                    <div class="order-meta">
+                        <span class="order-status" id="modalOrderStatus">Новый</span>
+                        <span class="order-date" id="modalOrderCreated">Создан: 01.01.2024</span>
+                        <span class="order-date" id="modalOrderUpdated">Обновлен: 01.01.2024</span>
+                    </div>
+                </div>
+
+                <!-- Client Information Section -->
+                <div class="order-section">
+                    <h3>Информация о клиенте</h3>
+                    <div class="client-info">
+                        <div class="info-row">
+                            <strong>Имя:</strong> <span id="modalClientName">Не указано</span>
+                        </div>
+                        <div class="info-row">
+                            <strong>Email:</strong> <span id="modalClientEmail">Не указан</span>
+                        </div>
+                        <div class="info-row">
+                            <strong>Телефон:</strong> <span id="modalClientPhone">Не указан</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Order Specifications Section -->
+                <div class="order-section">
+                    <h3>Спецификация заказа</h3>
+                    <div class="order-specs">
+                        <div class="info-row">
+                            <strong>Тип изделия:</strong> <span id="modalProductType">Не указан</span>
+                        </div>
+                        <div class="info-row">
+                            <strong>Диапазон цен:</strong> <span id="modalPriceRange">Не указан</span>
+                        </div>
+                        <div class="info-row">
+                            <strong>Фиксированная цена:</strong> <span id="modalFixedPrice">Не указана</span>
+                        </div>
+                        <div class="info-row">
+                            <strong>Дедлайн:</strong> <span id="modalDeadline">Не указан</span>
+                        </div>
+                        <div class="info-row">
+                            <strong>Назначенный мастер:</strong> <span id="modalAssignedMaster">Не назначен</span>
+                        </div>
+                        <div class="info-row description-row">
+                            <strong>Описание:</strong>
+                            <div class="description-text" id="modalDescription">Описание отсутствует</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Attachments Section -->
+                <div class="order-section">
+                    <h3>Прикрепленные файлы</h3>
+                    <div id="modalAttachments" class="attachments-section">
+                        <div class="no-attachments">Файлы не прикреплены</div>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="modal-actions">
+                    <button id="copyOrderNumber" class="action-btn secondary">Скопировать номер заказа</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Image Gallery Modal -->
+    <div id="imageGalleryModal" class="modal image-gallery-modal">
+        <div class="modal-content gallery-content">
+            <span class="close-button" id="closeGalleryModal">&times;</span>
+            <div class="gallery-container">
+                <button class="gallery-nav prev" id="galleryPrev">&lt;</button>
+                <img id="galleryImage" src="" alt="Order photo" class="gallery-image">
+                <button class="gallery-nav next" id="galleryNext">&gt;</button>
+            </div>
+            <div class="gallery-info">
+                <span id="galleryCounter">1 / 1</span>
+                <span id="galleryFilename">filename.jpg</span>
+            </div>
+        </div>
+    </div>
+
     <script>
+        // Global functions for order actions
+        let currentGalleryImages = [];
+        let currentGalleryIndex = 0;
+
+        // Global modal functions
+        async function showOrderDetails(orderId) {
+            const modal = document.getElementById('orderDetailsModal');
+            const loading = document.getElementById('orderModalLoading');
+            const error = document.getElementById('orderModalError');
+            const content = document.getElementById('orderModalContent');
+
+            if (!modal) {
+                console.error('Modal element not found!');
+                return;
+            }
+
+            // Show modal and loading state
+            modal.style.display = 'block';
+            loading.style.display = 'block';
+            error.style.display = 'none';
+            content.style.display = 'none';
+
+            try {
+                const user = JSON.parse(localStorage.getItem('user'));
+                if (!user) {
+                    throw new Error('Пользователь не авторизован');
+                }
+
+                // Fetch order details
+                console.log('Fetching order details for ID:', orderId);
+                console.log('User:', user);
+
+                const response = await fetch(`/api/orders/${orderId}`, {
+                    headers: {
+                        'user-id': user.id,
+                        'user-role': user.role
+                    }
+                });
+
+                console.log('Response status:', response.status);
+                const result = await response.json();
+                console.log('API response:', result);
+
+                if (result.success) {
+                    populateOrderModal(result.order);
+                    loading.style.display = 'none';
+                    content.style.display = 'block';
+                } else {
+                    throw new Error(result.message || 'Ошибка при загрузке заказа');
+                }
+
+            } catch (error) {
+                console.error('Show order details error:', error);
+                loading.style.display = 'none';
+                error.style.display = 'block';
+                error.querySelector('p').textContent = error.message || 'Данные не загружены';
+            }
+        }
+
+        // Populate modal with order data
+        function populateOrderModal(order) {
+            if (!order) {
+                console.error('No order data provided');
+                return;
+            }
+
+            // Basic Details
+            document.getElementById('modalOrderNumber').textContent = order.orderNumber || 'Не указан';
+            document.getElementById('modalOrderStatus').textContent = getStatusText(order.status);
+            document.getElementById('modalOrderStatus').className = `order-status status status-${order.status}`;
+
+            const createdDate = new Date(order.createdAt).toLocaleDateString('ru-RU');
+            const updatedDate = new Date(order.updatedAt).toLocaleDateString('ru-RU');
+            document.getElementById('modalOrderCreated').textContent = `Создан: ${createdDate}`;
+            document.getElementById('modalOrderUpdated').textContent = `Обновлен: ${updatedDate}`;
+
+            // Client Information
+            document.getElementById('modalClientName').textContent = order.client ? order.client.fullName : 'Не указан';
+            document.getElementById('modalClientEmail').textContent = order.client ? order.client.email : 'Не указан';
+            document.getElementById('modalClientPhone').textContent = order.client && order.client.phone ? order.client.phone : 'Не указан';
+
+            // Order Specifications
+            document.getElementById('modalProductType').textContent = order.productType || 'Не указан';
+            document.getElementById('modalPriceRange').textContent = order.priceRange || 'Не указан';
+            document.getElementById('modalFixedPrice').textContent = order.price ? `${order.price} BYN` : 'Не указана';
+
+            const deadlineText = order.deadline ? new Date(order.deadline).toLocaleDateString('ru-RU') : 'Не указан';
+            document.getElementById('modalDeadline').textContent = deadlineText;
+
+            document.getElementById('modalAssignedMaster').textContent = order.assignedTo ? order.assignedTo.fullName : 'Не назначен';
+
+            const descriptionText = order.description ? order.description : 'Описание отсутствует';
+            document.getElementById('modalDescription').textContent = descriptionText;
+
+            // Attachments
+            populateAttachments(order);
+        }
+
+        // Populate attachments section
+        function populateAttachments(order) {
+            const attachmentsContainer = document.getElementById('modalAttachments');
+            const photos = order.photos || [];
+            const attachments = order.attachments || [];
+
+            // Combine photos and attachments
+            const allAttachments = [...photos, ...attachments];
+
+            if (allAttachments.length === 0) {
+                attachmentsContainer.innerHTML = '<div class="no-attachments">Файлы не прикреплены</div>';
+                return;
+            }
+
+            // Filter to get only photos for gallery
+            currentGalleryImages = photos.map(photo => ({
+                url: `/uploads/orders/photos/${photo.filename}`,
+                filename: photo.originalName || photo.filename
+            }));
+
+            attachmentsContainer.innerHTML = '<div class="attachments-grid"></div>';
+            const grid = attachmentsContainer.querySelector('.attachments-grid');
+
+            allAttachments.forEach((attachment, index) => {
+                const item = document.createElement('div');
+                item.className = 'attachment-item';
+
+                // Check if it's a photo
+                const isPhoto = attachment.filename && photos.some(p => p.filename === attachment.filename);
+
+                if (isPhoto) {
+                    item.innerHTML = `
+                        <img src="/uploads/orders/photos/${attachment.filename}"
+                             alt="${attachment.alt || attachment.originalName || attachment.filename}"
+                             class="attachment-image"
+                             onclick="openImageGallery(${photos.findIndex(p => p.filename === attachment.filename)})">
+                        <div class="attachment-info">
+                            <div class="attachment-filename">${attachment.originalName || attachment.filename}</div>
+                        </div>
+                    `;
+                } else {
+                    // For non-photo attachments, show download link
+                    item.innerHTML = `
+                        <div class="attachment-info" style="height: 120px; display: flex; align-items: center; justify-content: center; background-color: #f8f9fa;">
+                            <div style="text-align: center;">
+                                <div style="font-size: 2rem; margin-bottom: 0.5rem;">📄</div>
+                                <div class="attachment-filename">${attachment.originalName || attachment.filename}</div>
+                            </div>
+                        </div>
+                    `;
+                    item.onclick = () => window.open(`/uploads/${attachment.path || attachment.filename}`, '_blank');
+                }
+
+                grid.appendChild(item);
+            });
+        }
+
+        // Image gallery functions
+        function openImageGallery(index) {
+            if (currentGalleryImages.length === 0) return;
+
+            currentGalleryIndex = index;
+            updateGallery();
+
+            document.getElementById('imageGalleryModal').style.display = 'block';
+        }
+
+        function updateGallery() {
+            const image = document.getElementById('galleryImage');
+            const counter = document.getElementById('galleryCounter');
+            const filename = document.getElementById('galleryFilename');
+            const prevBtn = document.getElementById('galleryPrev');
+            const nextBtn = document.getElementById('galleryNext');
+
+            image.src = currentGalleryImages[currentGalleryIndex].url;
+            counter.textContent = `${currentGalleryIndex + 1} / ${currentGalleryImages.length}`;
+            filename.textContent = currentGalleryImages[currentGalleryIndex].filename;
+
+            prevBtn.disabled = currentGalleryIndex === 0;
+            nextBtn.disabled = currentGalleryIndex === currentGalleryImages.length - 1;
+        }
+
+        function navigateGallery(direction) {
+            currentGalleryIndex += direction;
+            if (currentGalleryIndex < 0) currentGalleryIndex = currentGalleryImages.length - 1;
+            if (currentGalleryIndex >= currentGalleryImages.length) currentGalleryIndex = 0;
+            updateGallery();
+        }
+
+        // Copy order number to clipboard
+        function copyOrderNumber() {
+            const orderNumber = document.getElementById('modalOrderNumber').textContent;
+            navigator.clipboard.writeText(orderNumber).then(() => {
+                const btn = document.getElementById('copyOrderNumber');
+                const originalText = btn.textContent;
+                btn.textContent = 'Скопировано!';
+                btn.style.backgroundColor = '#28a745';
+
+                setTimeout(() => {
+                    btn.textContent = originalText;
+                    btn.style.backgroundColor = '';
+                }, 2000);
+            }).catch(err => {
+                console.error('Failed to copy: ', err);
+                // Fallback for older browsers
+                const textArea = document.createElement('textarea');
+                textArea.value = orderNumber;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+
+                const btn = document.getElementById('copyOrderNumber');
+                const originalText = btn.textContent;
+                btn.textContent = 'Скопировано!';
+                btn.style.backgroundColor = '#28a745';
+
+                setTimeout(() => {
+                    btn.textContent = originalText;
+                    btn.style.backgroundColor = '';
+                }, 2000);
+            });
+        }
+
+        // Global helper function
+        function getStatusText(status) {
+            const statusMap = {
+                'new': 'Новый',
+                'clarification': 'Уточнение',
+                'in_progress': 'В работе',
+                'awaiting_payment': 'Ожидает оплаты',
+                'completed': 'Завершен',
+                'delivered': 'Доставлен',
+                'cancelled': 'Отменен'
+            };
+            return statusMap[status] || status;
+        }
+
+        // Global viewOrder function
+        function viewOrder(orderId) {
+            showOrderDetails(orderId);
+        }
+
+        // Global editOrder function
+        function editOrder(orderId) {
+            alert(`Редактирование заказа ${orderId} - функционал будет реализован`);
+        }
+
         document.addEventListener('DOMContentLoaded', function() {
             const userAvatar = document.getElementById('userAvatar');
             const userName = document.getElementById('userName');
@@ -274,18 +621,7 @@
                 return row;
             }
 
-            function getStatusText(status) {
-                const statusMap = {
-                    'new': 'Новый',
-                    'clarification': 'Уточнение',
-                    'in_progress': 'В работе',
-                    'awaiting_payment': 'Ожидает оплаты',
-                    'completed': 'Завершен',
-                    'delivered': 'Доставлен',
-                    'cancelled': 'Отменен'
-                };
-                return statusMap[status] || status;
-            }
+            // getStatusText moved to global scope
 
             function filterOrders() {
                 const statusFilter = document.getElementById('statusFilter').value;
@@ -310,14 +646,50 @@
                 displayOrders(filteredOrders);
             }
 
-            // Placeholder functions for order actions
-            function viewOrder(orderId) {
-                alert(`Просмотр заказа ${orderId} - функционал будет реализован`);
-            }
+            // Modal event listeners setup
+            // Ensure modals are hidden on page load
+            document.getElementById('orderDetailsModal').style.display = 'none';
+            document.getElementById('imageGalleryModal').style.display = 'none';
 
-            function editOrder(orderId) {
-                alert(`Редактирование заказа ${orderId} - функционал будет реализован`);
-            }
+            // Close modals when clicking outside or on close button
+            document.getElementById('closeOrderModal').onclick = () => {
+                document.getElementById('orderDetailsModal').style.display = 'none';
+            };
+
+            document.getElementById('closeGalleryModal').onclick = () => {
+                document.getElementById('imageGalleryModal').style.display = 'none';
+            };
+
+            // Click outside to close
+            window.onclick = function(event) {
+                const orderModal = document.getElementById('orderDetailsModal');
+                const galleryModal = document.getElementById('imageGalleryModal');
+
+                if (event.target === orderModal) {
+                    orderModal.style.display = 'none';
+                }
+                if (event.target === galleryModal) {
+                    galleryModal.style.display = 'none';
+                }
+            };
+
+            // ESC key to close modals
+            document.addEventListener('keydown', function(event) {
+                if (event.key === 'Escape') {
+                    document.getElementById('orderDetailsModal').style.display = 'none';
+                    document.getElementById('imageGalleryModal').style.display = 'none';
+                }
+            });
+
+            // Gallery navigation
+            document.getElementById('galleryPrev').onclick = () => navigateGallery(-1);
+            document.getElementById('galleryNext').onclick = () => navigateGallery(1);
+
+            // Copy order number button
+            document.getElementById('copyOrderNumber').onclick = copyOrderNumber;
+
+            // Modal functionality moved to global scope
+
         });
     </script>
 </body>
