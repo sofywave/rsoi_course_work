@@ -40,10 +40,53 @@
         <!-- Orders Management Section -->
         <section id="orders" class="content-section active">
             <h2 class="section-title">Управление заказами</h2>
-            <div class="placeholder-content">
-                <h3>Список заказов</h3>
-                <p>Здесь будет отображаться список всех заказов с возможностью просмотра деталей, изменения статуса и управления.</p>
-                <p><em>Функционал будет реализован при подключении к API сервера.</em></p>
+
+            <!-- Orders Controls -->
+            <div class="orders-controls">
+                <div class="filters">
+                    <select id="statusFilter">
+                        <option value="">Все статусы</option>
+                        <option value="new">Новый</option>
+                        <option value="clarification">Уточнение</option>
+                        <option value="in_progress">В работе</option>
+                        <option value="awaiting_payment">Ожидает оплаты</option>
+                        <option value="completed">Завершен</option>
+                        <option value="delivered">Доставлен</option>
+                        <option value="cancelled">Отменен</option>
+                    </select>
+                </div>
+                <div class="search">
+                    <input type="text" id="searchInput" placeholder="Поиск по номеру заказа или клиенту...">
+                </div>
+                <button id="refreshOrders" class="refresh-btn">🔄 Обновить</button>
+            </div>
+
+            <!-- Orders Table -->
+            <div class="orders-container">
+                <div id="loadingSpinner" class="loading-spinner" style="display: none;">
+                    <p>Загрузка заказов...</p>
+                </div>
+                <div id="errorMessage" class="error-message" style="display: none;"></div>
+                <table id="ordersTable" class="orders-table" style="display: none;">
+                    <thead>
+                        <tr>
+                            <th>Номер заказа</th>
+                            <th>Клиент</th>
+                            <th>Статус</th>
+                            <th>Тип изделия</th>
+                            <th>Цена</th>
+                            <th>Дедлайн</th>
+                            <th>Мастер</th>
+                            <th>Действия</th>
+                        </tr>
+                    </thead>
+                    <tbody id="ordersTableBody">
+                        <!-- Orders will be populated here -->
+                    </tbody>
+                </table>
+                <div id="noOrdersMessage" class="no-orders-message" style="display: none;">
+                    <p>Заказы не найдены.</p>
+                </div>
             </div>
         </section>
 
@@ -123,6 +166,158 @@
                     document.getElementById(sectionId).classList.add('active');
                 });
             });
+
+            // Orders Management Functionality
+            let allOrders = []; // Store all orders for filtering
+
+            // Load orders when page loads
+            loadOrders();
+
+            // Event listeners for filters and controls
+            document.getElementById('statusFilter').addEventListener('change', filterOrders);
+            document.getElementById('searchInput').addEventListener('input', filterOrders);
+            document.getElementById('refreshOrders').addEventListener('click', loadOrders);
+
+            async function loadOrders() {
+                const loadingSpinner = document.getElementById('loadingSpinner');
+                const errorMessage = document.getElementById('errorMessage');
+                const ordersTable = document.getElementById('ordersTable');
+                const noOrdersMessage = document.getElementById('noOrdersMessage');
+
+                // Show loading, hide others
+                loadingSpinner.style.display = 'block';
+                errorMessage.style.display = 'none';
+                ordersTable.style.display = 'none';
+                noOrdersMessage.style.display = 'none';
+
+                try {
+                    const user = JSON.parse(localStorage.getItem('user'));
+                    if (!user) {
+                        throw new Error('Пользователь не авторизован');
+                    }
+
+                    const response = await fetch('/api/manager/orders', {
+                        headers: {
+                            'user-id': user.id,
+                            'user-role': user.role
+                        }
+                    });
+
+                    const result = await response.json();
+
+                    if (result.success) {
+                        allOrders = result.orders;
+                        displayOrders(allOrders);
+                    } else {
+                        throw new Error(result.message || 'Ошибка при загрузке заказов');
+                    }
+
+                } catch (error) {
+                    console.error('Load orders error:', error);
+                    errorMessage.textContent = error.message;
+                    errorMessage.style.display = 'block';
+                } finally {
+                    loadingSpinner.style.display = 'none';
+                }
+            }
+
+            function displayOrders(orders) {
+                const ordersTableBody = document.getElementById('ordersTableBody');
+                const ordersTable = document.getElementById('ordersTable');
+                const noOrdersMessage = document.getElementById('noOrdersMessage');
+
+                if (orders.length === 0) {
+                    ordersTable.style.display = 'none';
+                    noOrdersMessage.style.display = 'block';
+                    return;
+                }
+
+                ordersTableBody.innerHTML = '';
+
+                orders.forEach(order => {
+                    const row = createOrderRow(order);
+                    ordersTableBody.appendChild(row);
+                });
+
+                ordersTable.style.display = 'table';
+                noOrdersMessage.style.display = 'none';
+            }
+
+            function createOrderRow(order) {
+                const row = document.createElement('tr');
+
+                // Format deadline
+                const deadlineText = order.deadline ? new Date(order.deadline).toLocaleDateString('ru-RU') : 'Не указан';
+                const deadlineClass = order.isOverdue ? 'overdue' : (order.daysUntilDeadline !== null && order.daysUntilDeadline <= 3 ? 'near-deadline' : '');
+
+                // Format price
+                const priceText = order.price ? `${order.price} BYN` : 'Не указана';
+
+                // Format status
+                const statusText = getStatusText(order.status);
+                const statusClass = `status status-${order.status}`;
+
+                row.innerHTML = `
+                    <td>${order.orderNumber}</td>
+                    <td>${order.client ? order.client.fullName : 'Не указан'}</td>
+                    <td><span class="${statusClass}">${statusText}</span></td>
+                    <td>${order.productType || 'Не указан'}</td>
+                    <td>${priceText}</td>
+                    <td class="${deadlineClass}">${deadlineText}</td>
+                    <td>${order.assignedTo ? order.assignedTo.fullName : 'Не назначен'}</td>
+                    <td class="actions">
+                        <button class="action-btn view" onclick="viewOrder('${order.id}')">👁</button>
+                        <button class="action-btn edit" onclick="editOrder('${order.id}')">✏️</button>
+                    </td>
+                `;
+
+                return row;
+            }
+
+            function getStatusText(status) {
+                const statusMap = {
+                    'new': 'Новый',
+                    'clarification': 'Уточнение',
+                    'in_progress': 'В работе',
+                    'awaiting_payment': 'Ожидает оплаты',
+                    'completed': 'Завершен',
+                    'delivered': 'Доставлен',
+                    'cancelled': 'Отменен'
+                };
+                return statusMap[status] || status;
+            }
+
+            function filterOrders() {
+                const statusFilter = document.getElementById('statusFilter').value;
+                const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+
+                let filteredOrders = allOrders;
+
+                // Filter by status
+                if (statusFilter) {
+                    filteredOrders = filteredOrders.filter(order => order.status === statusFilter);
+                }
+
+                // Filter by search term
+                if (searchTerm) {
+                    filteredOrders = filteredOrders.filter(order =>
+                        order.orderNumber.toLowerCase().includes(searchTerm) ||
+                        (order.client && order.client.fullName.toLowerCase().includes(searchTerm)) ||
+                        (order.assignedTo && order.assignedTo.fullName.toLowerCase().includes(searchTerm))
+                    );
+                }
+
+                displayOrders(filteredOrders);
+            }
+
+            // Placeholder functions for order actions
+            function viewOrder(orderId) {
+                alert(`Просмотр заказа ${orderId} - функционал будет реализован`);
+            }
+
+            function editOrder(orderId) {
+                alert(`Редактирование заказа ${orderId} - функционал будет реализован`);
+            }
         });
     </script>
 </body>
