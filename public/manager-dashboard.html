@@ -29,7 +29,6 @@
     <nav>
         <div class="nav-buttons">
             <button class="nav-btn active" data-section="orders">📋 Управление заказами</button>
-            <button class="nav-btn" data-section="clients">👥 Управление клиентами</button>
             <button class="nav-btn" data-section="users">👤 Управление пользователями</button>
             <button class="nav-btn" data-section="reports">📊 Формирование отчета</button>
         </div>
@@ -90,15 +89,6 @@
             </div>
         </section>
 
-        <!-- Clients Management Section -->
-        <section id="clients" class="content-section">
-            <h2 class="section-title">Управление клиентами</h2>
-            <div class="placeholder-content">
-                <h3>База клиентов</h3>
-                <p>Здесь будет отображаться список клиентов с возможностью поиска, просмотра истории заказов и редактирования информации.</p>
-                <p><em>Функционал будет реализован при подключении к API сервера.</em></p>
-            </div>
-        </section>
 
         <!-- Users Management Section -->
         <section id="users" class="content-section">
@@ -111,7 +101,6 @@
                         <option value="">Все роли</option>
                         <option value="client">Клиент</option>
                         <option value="master">Мастер</option>
-                        <option value="manager">Менеджер</option>
                         <option value="admin">Администратор</option>
                     </select>
                 </div>
@@ -716,7 +705,7 @@
             const roleMap = {
                 'client': 'Клиент',
                 'master': 'Мастер',
-                'manager': 'Менеджер',
+                'manager': 'Администратор',
                 'admin': 'Администратор'
             };
             return roleMap[role] || role;
@@ -807,7 +796,7 @@
                 <td>${user.phone || 'Не указан'}</td>
                 <td>${registrationDate}</td>
                 <td class="actions">
-                    <button class="action-btn view" onclick="viewUser('${user.id}')">👁</button>
+                    <button class="action-btn edit" onclick="editUserRole('${user.id}', '${user.role}')">✏️</button>
                 </td>
             `;
 
@@ -823,7 +812,13 @@
 
             // Filter by role
             if (roleFilter) {
-                filteredUsers = filteredUsers.filter(user => user.role === roleFilter);
+                filteredUsers = filteredUsers.filter(user => {
+                    if (roleFilter === 'admin') {
+                        // Treat both 'admin' and 'manager' as admin role
+                        return user.role === 'admin' || user.role === 'manager';
+                    }
+                    return user.role === roleFilter;
+                });
             }
 
             // Filter by search term
@@ -837,10 +832,93 @@
             displayUsers(filteredUsers);
         }
 
-        // Global viewUser function (placeholder for future user details modal)
-        function viewUser(userId) {
-            // For now, just show an alert. In the future, this could open a user details modal
-            alert('Просмотр пользователя будет реализован в следующей версии');
+        // Global editUserRole function - inline role editing
+        function editUserRole(userId, currentRole) {
+            // Find the role cell for this user
+            const rows = document.querySelectorAll('#usersTableBody tr');
+            let targetCell = null;
+
+            rows.forEach(row => {
+                const editBtn = row.querySelector('.action-btn.edit');
+                if (editBtn && editBtn.getAttribute('onclick').includes(userId)) {
+                    targetCell = row.cells[2]; // Role column (0-indexed: 0=name, 1=email, 2=role)
+                }
+            });
+
+            if (!targetCell) return;
+
+            // Store original content
+            const originalContent = targetCell.innerHTML;
+
+            // Create dropdown
+            const select = document.createElement('select');
+            select.className = 'role-select';
+            select.innerHTML = `
+                <option value="client" ${currentRole === 'client' ? 'selected' : ''}>Клиент</option>
+                <option value="admin" ${currentRole === 'admin' || currentRole === 'manager' ? 'selected' : ''}>Администратор</option>
+                <option value="master" ${currentRole === 'master' ? 'selected' : ''}>Мастер</option>
+            `;
+
+            // Replace cell content with dropdown
+            targetCell.innerHTML = '';
+            targetCell.appendChild(select);
+            select.focus();
+
+            // Handle selection
+            const handleSelection = async () => {
+                const newRole = select.value;
+                if (newRole === currentRole) {
+                    // No change, restore original content
+                    targetCell.innerHTML = originalContent;
+                    return;
+                }
+
+                try {
+                    const user = JSON.parse(localStorage.getItem('user'));
+                    if (!user) {
+                        throw new Error('Пользователь не авторизован');
+                    }
+
+                    const response = await fetch(`/api/users/${userId}/role`, {
+                        method: 'PATCH',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'user-id': user.id,
+                            'user-role': user.role
+                        },
+                        body: JSON.stringify({ role: newRole })
+                    });
+
+                    const result = await response.json();
+
+                    if (result.success) {
+                        // Update the display with new role
+                        const roleText = getRoleText(newRole);
+                        const roleClass = `user-role role-${newRole}`;
+                        targetCell.innerHTML = `<span class="${roleClass}">${roleText}</span>`;
+                    } else {
+                        throw new Error(result.message || 'Ошибка при изменении роли');
+                    }
+
+                } catch (error) {
+                    console.error('Role update error:', error);
+                    // Show error and restore original content
+                    targetCell.innerHTML = originalContent;
+                    alert('Ошибка при изменении роли: ' + error.message);
+                }
+            };
+
+            // Handle events
+            select.addEventListener('change', handleSelection);
+            select.addEventListener('blur', handleSelection);
+            select.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    handleSelection();
+                } else if (e.key === 'Escape') {
+                    // Cancel editing, restore original content
+                    targetCell.innerHTML = originalContent;
+                }
+            });
         }
 
         // Global loadOrders function
@@ -1196,6 +1274,7 @@
 
             // Set initial state for orders section
             document.querySelector('main').classList.add('orders-top');
+            document.querySelector('main').classList.remove('users-top');
 
             // Navigation functionality
             navButtons.forEach(button => {
@@ -1204,8 +1283,9 @@
                     navButtons.forEach(btn => btn.classList.remove('active'));
                     sections.forEach(section => section.classList.remove('active'));
 
-                    // Remove orders-top class from main
+                    // Remove orders-top and users-top classes from main
                     document.querySelector('main').classList.remove('orders-top');
+                    document.querySelector('main').classList.remove('users-top');
 
                     // Add active class to clicked button and corresponding section
                     this.classList.add('active');
@@ -1217,8 +1297,9 @@
                         document.querySelector('main').classList.add('orders-top');
                     }
 
-                    // Load users when users section becomes active
+                    // Add users-top class to main if users section is active
                     if (sectionId === 'users') {
+                        document.querySelector('main').classList.add('users-top');
                         loadUsers();
                     }
                 });
