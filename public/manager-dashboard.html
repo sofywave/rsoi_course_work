@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Панель управления - ООО «Панна сувенир»</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/manager-dashboard.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="dashboard-header">
+        <div class="logo-section">
+            <img src="images/лого без фона.png" alt="ООО «Панна сувенир»" class="header-logo-image">
+            <h1>ООО «Панна сувенир»</h1>
+        </div>
+        <div class="user-section">
+            <div class="user-info">
+                <div class="user-avatar" id="userAvatar">ИИ</div>
+                <span id="userName" class="user-name">Загрузка...</span>
+            </div>
+            <button class="logout-btn" id="logoutBtn">Выйти</button>
+        </div>
+    </header>
+
+    <!-- Navigation -->
+    <nav>
+        <div class="nav-buttons">
+            <button class="nav-btn active" data-section="orders">📋 Управление заказами</button>
+            <button class="nav-btn" data-section="clients">👥 Управление клиентами</button>
+            <button class="nav-btn" data-section="users">👤 Управление пользователями</button>
+            <button class="nav-btn" data-section="reports">📊 Формирование отчета</button>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main>
+        <!-- Orders Management Section -->
+        <section id="orders" class="content-section active">
+            <h2 class="section-title">Управление заказами</h2>
+            <div class="placeholder-content">
+                <h3>Список заказов</h3>
+                <p>Здесь будет отображаться список всех заказов с возможностью просмотра деталей, изменения статуса и управления.</p>
+                <p><em>Функционал будет реализован при подключении к API сервера.</em></p>
+            </div>
+        </section>
+
+        <!-- Clients Management Section -->
+        <section id="clients" class="content-section">
+            <h2 class="section-title">Управление клиентами</h2>
+            <div class="placeholder-content">
+                <h3>База клиентов</h3>
+                <p>Здесь будет отображаться список клиентов с возможностью поиска, просмотра истории заказов и редактирования информации.</p>
+                <p><em>Функционал будет реализован при подключении к API сервера.</em></p>
+            </div>
+        </section>
+
+        <!-- Users Management Section -->
+        <section id="users" class="content-section">
+            <h2 class="section-title">Управление пользователями</h2>
+            <div class="placeholder-content">
+                <h3>Управление мастерами и сотрудниками</h3>
+                <p>Здесь будет возможность добавления новых мастеров, редактирования их профилей и управления правами доступа.</p>
+                <p><em>Функционал будет реализован при подключении к API сервера.</em></p>
+            </div>
+        </section>
+
+        <!-- Reports Section -->
+        <section id="reports" class="content-section">
+            <h2 class="section-title">Формирование отчета</h2>
+            <div class="placeholder-content">
+                <h3>Генерация отчетов</h3>
+                <p>Здесь будет возможность формирования различных отчетов по продажам, заказам и работе мастеров.</p>
+                <p><em>Функционал будет реализован при подключении к API сервера.</em></p>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const userAvatar = document.getElementById('userAvatar');
+            const userName = document.getElementById('userName');
+            const logoutBtn = document.getElementById('logoutBtn');
+            const navButtons = document.querySelectorAll('.nav-btn');
+            const sections = document.querySelectorAll('.content-section');
+
+            // Get user data from localStorage
+            const user = JSON.parse(localStorage.getItem('user'));
+
+            if (user && user.fullName) {
+                userName.textContent = user.fullName;
+
+                // Generate initials for avatar
+                const nameParts = user.fullName.split(' ');
+                const initials = nameParts.length >= 2
+                    ? (nameParts[0][0] + nameParts[1][0]).toUpperCase()
+                    : nameParts[0][0].toUpperCase();
+                userAvatar.textContent = initials;
+            } else {
+                userName.textContent = 'Пользователь не найден';
+                userAvatar.textContent = '?';
+            }
+
+            // Logout functionality
+            logoutBtn.addEventListener('click', function() {
+                localStorage.removeItem('user');
+                localStorage.removeItem('token');
+                window.location.href = '/';
+            });
+
+            // Navigation functionality
+            navButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    // Remove active class from all buttons and sections
+                    navButtons.forEach(btn => btn.classList.remove('active'));
+                    sections.forEach(section => section.classList.remove('active'));
+
+                    // Add active class to clicked button and corresponding section
+                    this.classList.add('active');
+                    const sectionId = this.getAttribute('data-section');
+                    document.getElementById(sectionId).classList.add('active');
+                });
+            });
+        });
+    </script>
+</body>
+</html>
