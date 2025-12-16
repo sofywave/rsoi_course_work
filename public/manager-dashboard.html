@@ -103,10 +103,48 @@
         <!-- Users Management Section -->
         <section id="users" class="content-section">
             <h2 class="section-title">Управление пользователями</h2>
-            <div class="placeholder-content">
-                <h3>Управление мастерами и сотрудниками</h3>
-                <p>Здесь будет возможность добавления новых мастеров, редактирования их профилей и управления правами доступа.</p>
-                <p><em>Функционал будет реализован при подключении к API сервера.</em></p>
+
+            <!-- Users Controls -->
+            <div class="users-controls">
+                <div class="filters">
+                    <select id="userRoleFilter">
+                        <option value="">Все роли</option>
+                        <option value="client">Клиент</option>
+                        <option value="master">Мастер</option>
+                        <option value="manager">Менеджер</option>
+                        <option value="admin">Администратор</option>
+                    </select>
+                </div>
+                <div class="search">
+                    <input type="text" id="userSearchInput" placeholder="Поиск по имени или email...">
+                </div>
+                <button id="refreshUsers" class="refresh-btn">🔄 Обновить</button>
+            </div>
+
+            <!-- Users Table -->
+            <div class="users-container">
+                <div id="usersLoadingSpinner" class="loading-spinner" style="display: none;">
+                    <p>Загрузка пользователей...</p>
+                </div>
+                <div id="usersErrorMessage" class="error-message" style="display: none;"></div>
+                <table id="usersTable" class="users-table" style="display: none;">
+                    <thead>
+                        <tr>
+                            <th>Имя</th>
+                            <th>Email</th>
+                            <th>Роль</th>
+                            <th>Телефон</th>
+                            <th>Дата регистрации</th>
+                            <th>Действия</th>
+                        </tr>
+                    </thead>
+                    <tbody id="usersTableBody">
+                        <!-- Users will be populated here -->
+                    </tbody>
+                </table>
+                <div id="noUsersMessage" class="no-users-message" style="display: none;">
+                    <p>Пользователи не найдены.</p>
+                </div>
             </div>
         </section>
 
@@ -670,6 +708,141 @@
             showOrderDetails(orderId);
         }
 
+        // Global users management variables and functions
+        let allUsers = []; // Store all users for filtering
+
+        // Global helper function to get role text in Russian
+        function getRoleText(role) {
+            const roleMap = {
+                'client': 'Клиент',
+                'master': 'Мастер',
+                'manager': 'Менеджер',
+                'admin': 'Администратор'
+            };
+            return roleMap[role] || role;
+        }
+
+        // Global loadUsers function
+        async function loadUsers() {
+            const loadingSpinner = document.getElementById('usersLoadingSpinner');
+            const errorMessage = document.getElementById('usersErrorMessage');
+            const usersTable = document.getElementById('usersTable');
+            const noUsersMessage = document.getElementById('noUsersMessage');
+
+            // Show loading, hide others
+            loadingSpinner.style.display = 'block';
+            errorMessage.style.display = 'none';
+            usersTable.style.display = 'none';
+            noUsersMessage.style.display = 'none';
+
+            try {
+                const user = JSON.parse(localStorage.getItem('user'));
+                if (!user) {
+                    throw new Error('Пользователь не авторизован');
+                }
+
+                const response = await fetch('/api/manager/users', {
+                    headers: {
+                        'user-id': user.id,
+                        'user-role': user.role
+                    }
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    allUsers = result.users;
+                    displayUsers(allUsers);
+                } else {
+                    throw new Error(result.message || 'Ошибка при загрузке пользователей');
+                }
+
+            } catch (error) {
+                console.error('Load users error:', error);
+                errorMessage.textContent = error.message;
+                errorMessage.style.display = 'block';
+            } finally {
+                loadingSpinner.style.display = 'none';
+            }
+        }
+
+        // Global displayUsers function
+        function displayUsers(users) {
+            const usersTableBody = document.getElementById('usersTableBody');
+            const usersTable = document.getElementById('usersTable');
+            const noUsersMessage = document.getElementById('noUsersMessage');
+
+            if (users.length === 0) {
+                usersTable.style.display = 'none';
+                noUsersMessage.style.display = 'block';
+                return;
+            }
+
+            usersTableBody.innerHTML = '';
+
+            users.forEach(user => {
+                const row = createUserRow(user);
+                usersTableBody.appendChild(row);
+            });
+
+            usersTable.style.display = 'table';
+            noUsersMessage.style.display = 'none';
+        }
+
+        // Global createUserRow function
+        function createUserRow(user) {
+            const row = document.createElement('tr');
+
+            // Format registration date
+            const registrationDate = new Date(user.createdAt).toLocaleDateString('ru-RU');
+
+            // Format role
+            const roleText = getRoleText(user.role);
+            const roleClass = `user-role role-${user.role}`;
+
+            row.innerHTML = `
+                <td>${user.fullName}</td>
+                <td>${user.email}</td>
+                <td><span class="${roleClass}">${roleText}</span></td>
+                <td>${user.phone || 'Не указан'}</td>
+                <td>${registrationDate}</td>
+                <td class="actions">
+                    <button class="action-btn view" onclick="viewUser('${user.id}')">👁</button>
+                </td>
+            `;
+
+            return row;
+        }
+
+        // Global filterUsers function
+        function filterUsers() {
+            const roleFilter = document.getElementById('userRoleFilter').value;
+            const searchTerm = document.getElementById('userSearchInput').value.toLowerCase();
+
+            let filteredUsers = allUsers;
+
+            // Filter by role
+            if (roleFilter) {
+                filteredUsers = filteredUsers.filter(user => user.role === roleFilter);
+            }
+
+            // Filter by search term
+            if (searchTerm) {
+                filteredUsers = filteredUsers.filter(user =>
+                    user.fullName.toLowerCase().includes(searchTerm) ||
+                    user.email.toLowerCase().includes(searchTerm)
+                );
+            }
+
+            displayUsers(filteredUsers);
+        }
+
+        // Global viewUser function (placeholder for future user details modal)
+        function viewUser(userId) {
+            // For now, just show an alert. In the future, this could open a user details modal
+            alert('Просмотр пользователя будет реализован в следующей версии');
+        }
+
         // Global loadOrders function
         async function loadOrders() {
             const loadingSpinner = document.getElementById('loadingSpinner');
@@ -1043,6 +1216,11 @@
                     if (sectionId === 'orders') {
                         document.querySelector('main').classList.add('orders-top');
                     }
+
+                    // Load users when users section becomes active
+                    if (sectionId === 'users') {
+                        loadUsers();
+                    }
                 });
             });
 
@@ -1055,6 +1233,16 @@
             document.getElementById('statusFilter').addEventListener('change', filterOrders);
             document.getElementById('searchInput').addEventListener('input', filterOrders);
             document.getElementById('refreshOrders').addEventListener('click', loadOrders);
+
+            // Users Management Functionality
+
+            // Load users when users section becomes active
+            // We'll handle this in the navigation functionality below
+
+            // Event listeners for user filters and controls
+            document.getElementById('userRoleFilter').addEventListener('change', filterUsers);
+            document.getElementById('userSearchInput').addEventListener('input', filterUsers);
+            document.getElementById('refreshUsers').addEventListener('click', loadUsers);
 
             // Modal event listeners setup
             // Ensure modals are hidden on page load

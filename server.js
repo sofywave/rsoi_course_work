@@ -798,6 +798,62 @@ app.get('/api/users/masters', async (req, res) => {
     }
 });
 
+// GET /api/manager/users - Get all users for manager dashboard (admin/manager only)
+app.get('/api/manager/users', async (req, res) => {
+    try {
+        const userRole = req.headers['user-role']; // In production, get from JWT
+
+        // Check if user has manager/admin permissions
+        if (userRole !== 'admin' && userRole !== 'manager') {
+            return res.status(403).json({
+                success: false,
+                message: 'Access denied. Manager or admin role required.'
+            });
+        }
+
+        const { page = 1, limit = 50, role, search } = req.query;
+        const skip = (parseInt(page) - 1) * parseInt(limit);
+
+        let query = {};
+
+        // Optional filters
+        if (role) query.role = role;
+        if (search) {
+            query.$or = [
+                { fullName: { $regex: search, $options: 'i' } },
+                { email: { $regex: search, $options: 'i' } }
+            ];
+        }
+
+        const users = await User.find(query)
+            .select('_id email fullName role phone createdAt')
+            .sort({ createdAt: -1 })
+            .skip(skip)
+            .limit(parseInt(limit));
+
+        const total = await User.countDocuments(query);
+
+        res.json({
+            success: true,
+            users: users.map(user => ({
+                id: user._id,
+                email: user.email,
+                fullName: user.fullName,
+                role: user.role,
+                phone: user.phone,
+                createdAt: user.createdAt
+            })),
+            total,
+            page: parseInt(page),
+            totalPages: Math.ceil(total / parseInt(limit))
+        });
+
+    } catch (error) {
+        console.error('Error fetching users:', error);
+        res.status(500).json({ success: false, message: 'Error fetching users' });
+    }
+});
+
 // PUT /api/users/profile - Update user profile
 app.put('/api/users/profile', async (req, res) => {
     console.log('Profile update request received:', req.body);
@@ -948,6 +1004,7 @@ app.listen(PORT, () => {
     console.log('  POST /api/login');
     console.log('  GET  /api/users/debug (debug users)');
     console.log('  GET  /api/users/masters (get all masters)');
+    console.log('  GET  /api/manager/users (get all users for manager)');
     console.log('  PUT  /api/users/profile (update user profile)');
     console.log('  POST /api/orders (create order with photos)');
     console.log('  GET  /api/orders (get orders)');
