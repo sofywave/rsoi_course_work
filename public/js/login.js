@@ -172,6 +172,8 @@ authForm.addEventListener('submit', async function(e) {
                     // Redirect based on user role
                     if (result.user.role === 'admin' || result.user.role === 'manager') {
                         window.location.href = '/manager-dashboard';
+                    } else if (result.user.role === 'master') {
+                        window.location.href = '/master-dashboard';
                     } else {
                         window.location.href = '/dashboard';
                     }
@@ -183,6 +185,8 @@ authForm.addEventListener('submit', async function(e) {
                     // Redirect based on user role
                     if (result.user.role === 'admin' || result.user.role === 'manager') {
                         window.location.href = '/manager-dashboard';
+                    } else if (result.user.role === 'master') {
+                        window.location.href = '/master-dashboard';
                     } else {
                         window.location.href = '/dashboard';
                     }
