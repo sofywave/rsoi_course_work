@@ -4,6 +4,7 @@ const cors = require('cors');
 const mongoose = require('mongoose');
 const multer = require('multer');
 const fs = require('fs');
+const jwt = require('jsonwebtoken');
 const User = require('./models/User');
 const Order = require('./models/Order');
 // Ensure Counter model is registered
@@ -11,6 +12,86 @@ require('./models/Order');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+// JWT configuration
+const JWT_SECRET = process.env.JWT_SECRET || 'your-super-secret-jwt-key-change-in-production';
+const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '24h';
+
+// JWT utility functions
+const generateToken = (user) => {
+    return jwt.sign(
+        {
+            userId: user._id,
+            email: user.email,
+            role: user.role,
+            fullName: user.fullName
+        },
+        JWT_SECRET,
+        { expiresIn: JWT_EXPIRES_IN }
+    );
+};
+
+const verifyToken = (token) => {
+    try {
+        return jwt.verify(token, JWT_SECRET);
+    } catch (error) {
+        throw new Error('Invalid or expired token');
+    }
+};
+
+// JWT authentication middleware
+const authenticateToken = async (req, res, next) => {
+    try {
+        const authHeader = req.headers['authorization'];
+        const token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
+
+        if (!token) {
+            return res.status(401).json({
+                success: false,
+                message: 'Access token required'
+            });
+        }
+
+        const decoded = verifyToken(token);
+
+        // Add user info to request object
+        req.user = {
+            id: decoded.userId,
+            email: decoded.email,
+            role: decoded.role,
+            fullName: decoded.fullName
+        };
+
+        next();
+    } catch (error) {
+        console.error('JWT verification error:', error.message);
+        return res.status(403).json({
+            success: false,
+            message: 'Invalid or expired token'
+        });
+    }
+};
+
+// Role-based authorization middleware
+const authorizeRoles = (...roles) => {
+    return (req, res, next) => {
+        if (!req.user) {
+            return res.status(401).json({
+                success: false,
+                message: 'Authentication required'
+            });
+        }
+
+        if (!roles.includes(req.user.role)) {
+            return res.status(403).json({
+                success: false,
+                message: 'Insufficient permissions'
+            });
+        }
+
+        next();
+    };
+};
 
 // MongoDB connection
 const connectDB = async () => {
@@ -102,6 +183,16 @@ app.get('/manager-dashboard', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'manager-dashboard.html'));
 });
 
+// Route for master dashboard
+app.get('/master-dashboard', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'master-dashboard.html'));
+});
+
+// Route for reports page
+app.get('/reports', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'reports.html'));
+});
+
 
 // API Routes
 
@@ -163,6 +254,9 @@ app.post('/api/register', async (req, res) => {
             timestamp: new Date().toISOString()
         });
 
+        // Generate JWT token
+        const token = generateToken(user);
+
         // Return success response with token (same format as login)
         res.status(201).json({
             success: true,
@@ -173,7 +267,7 @@ app.post('/api/register', async (req, res) => {
                 fullName: user.fullName,
                 role: user.role
             },
-            token: 'mock-jwt-token-' + Date.now() // In production, generate a real JWT
+            token: token
         });
 
     } catch (error) {
@@ -226,6 +320,9 @@ app.post('/api/login', async (req, res) => {
             timestamp: new Date().toISOString()
         });
 
+        // Generate JWT token
+        const token = generateToken(user);
+
         // Return actual user data (excluding password)
         res.json({
             success: true,
@@ -236,7 +333,7 @@ app.post('/api/login', async (req, res) => {
                 fullName: user.fullName,
                 role: user.role
             },
-            token: 'mock-jwt-token-' + Date.now() // In production, generate a real JWT
+            token: token
         });
 
     } catch (error) {
@@ -273,7 +370,7 @@ app.get('/api/product-types', (req, res) => {
 });
 
 // POST /api/orders - Create new order with optional photo uploads
-app.post('/api/orders', uploadPhotos.array('photos', 10), async (req, res) => {
+app.post('/api/orders', authenticateToken, uploadPhotos.array('photos', 10), async (req, res) => {
     try {
         const { clientId, description, price, deadline, productType } = req.body;
 
@@ -392,11 +489,11 @@ app.post('/api/orders', uploadPhotos.array('photos', 10), async (req, res) => {
 });
 
 // GET /api/orders - Get orders (filtered by user role)
-app.get('/api/orders', async (req, res) => {
+app.get('/api/orders', authenticateToken, async (req, res) => {
     try {
         const { clientId, status, page = 1, limit = 10 } = req.query;
-        const userId = req.headers['user-id']; // In production, get from JWT
-        const userRole = req.headers['user-role']; // In production, get from JWT
+        const userId = req.user.id; // From JWT
+        const userRole = req.user.role; // From JWT
 
         let query = {};
 
@@ -463,7 +560,7 @@ app.get('/api/orders', async (req, res) => {
 });
 
 // GET /api/orders/:id - Get single order
-app.get('/api/orders/:id', async (req, res) => {
+app.get('/api/orders/:id', authenticateToken, async (req, res) => {
     try {
         const order = await Order.findById(req.params.id)
             .populate('client', 'fullName email phone')
@@ -476,9 +573,9 @@ app.get('/api/orders/:id', async (req, res) => {
             });
         }
 
-        // Check permissions (simplified - in production use JWT)
-        const userId = req.headers['user-id'];
-        const userRole = req.headers['user-role'];
+        // Check permissions
+        const userId = req.user.id;
+        const userRole = req.user.role;
 
         if (userRole === 'client' && order.client._id.toString() !== userId) {
             return res.status(403).json({
@@ -519,9 +616,10 @@ app.get('/api/orders/:id', async (req, res) => {
 });
 
 // PUT /api/orders/:id - Update order
-app.put('/api/orders/:id', async (req, res) => {
+app.put('/api/orders/:id', authenticateToken, async (req, res) => {
     try {
         const { assignedTo, status, description, price, deadline } = req.body;
+        console.log('Order update request:', { orderId: req.params.id, status, userId: req.user.id, userRole: req.user.role });
 
         const order = await Order.findById(req.params.id);
         if (!order) {
@@ -531,12 +629,22 @@ app.put('/api/orders/:id', async (req, res) => {
             });
         }
 
-        // Check permissions (simplified - in production use JWT)
-        const userRole = req.headers['user-role'];
+        console.log('Order found:', { orderId: order._id, currentStatus: order.status, newStatus: status });
+
+        // Check permissions
+        const userRole = req.user.role;
         if (userRole !== 'admin' && userRole !== 'master') {
             return res.status(403).json({
                 success: false,
                 message: 'Access denied'
+            });
+        }
+
+        // Masters can only update orders assigned to them
+        if (userRole === 'master' && order.assignedTo?.toString() !== req.user.id) {
+            return res.status(403).json({
+                success: false,
+                message: 'You can only update orders assigned to you'
             });
         }
 
@@ -548,6 +656,8 @@ app.put('/api/orders/:id', async (req, res) => {
         if (deadline !== undefined) order.deadline = deadline ? new Date(deadline) : undefined;
 
         await order.save();
+        console.log('Order saved successfully:', { orderId: order._id, newStatus: order.status });
+
         await order.populate('client', 'fullName email phone');
         await order.populate('assignedTo', 'fullName email phone');
 
@@ -579,7 +689,7 @@ app.put('/api/orders/:id', async (req, res) => {
 });
 
 // POST /api/orders/:id/photos - Add photos to existing order
-app.post('/api/orders/:id/photos', uploadPhotos.array('photos', 10), async (req, res) => {
+app.post('/api/orders/:id/photos', authenticateToken, uploadPhotos.array('photos', 10), async (req, res) => {
     try {
         const order = await Order.findById(req.params.id);
         if (!order) {
@@ -590,8 +700,8 @@ app.post('/api/orders/:id/photos', uploadPhotos.array('photos', 10), async (req,
         }
 
         // Check permissions
-        const userId = req.headers['user-id'];
-        const userRole = req.headers['user-role'];
+        const userId = req.user.id;
+        const userRole = req.user.role;
 
         if (userRole === 'client' && order.client.toString() !== userId) {
             return res.status(403).json({
@@ -639,7 +749,7 @@ app.post('/api/orders/:id/photos', uploadPhotos.array('photos', 10), async (req,
 });
 
 // DELETE /api/orders/:id/photos/:filename - Remove photo from order
-app.delete('/api/orders/:id/photos/:filename', async (req, res) => {
+app.delete('/api/orders/:id/photos/:filename', authenticateToken, async (req, res) => {
     try {
         const order = await Order.findById(req.params.id);
         if (!order) {
@@ -650,8 +760,8 @@ app.delete('/api/orders/:id/photos/:filename', async (req, res) => {
         }
 
         // Check permissions
-        const userId = req.headers['user-id'];
-        const userRole = req.headers['user-role'];
+        const userId = req.user.id;
+        const userRole = req.user.role;
 
         if (userRole === 'client' && order.client.toString() !== userId) {
             return res.status(403).json({
@@ -693,17 +803,8 @@ app.delete('/api/orders/:id/photos/:filename', async (req, res) => {
 // Manager API Routes
 
 // GET /api/manager/orders - Get all orders for manager dashboard (admin/manager only)
-app.get('/api/manager/orders', async (req, res) => {
+app.get('/api/manager/orders', authenticateToken, authorizeRoles('admin', 'manager'), async (req, res) => {
     try {
-        const userRole = req.headers['user-role']; // In production, get from JWT
-
-        // Check if user has manager/admin permissions
-        if (userRole !== 'admin' && userRole !== 'manager') {
-            return res.status(403).json({
-                success: false,
-                message: 'Access denied. Manager or admin role required.'
-            });
-        }
 
         const { page = 1, limit = 50, status, clientId, assignedTo } = req.query;
         const skip = (parseInt(page) - 1) * parseInt(limit);
@@ -781,6 +882,32 @@ app.get('/api/users/debug', async (req, res) => {
     }
 });
 
+// GET /api/debug/orders - Debug endpoint to check orders
+app.get('/api/debug/orders', async (req, res) => {
+    try {
+        const orders = await Order.find({})
+            .populate('client', 'fullName email')
+            .populate('assignedTo', 'fullName email role')
+            .select('orderNumber status assignedTo client createdAt');
+
+        res.json({
+            success: true,
+            orders: orders.map(o => ({
+                id: o._id,
+                orderNumber: o.orderNumber,
+                status: o.status,
+                client: o.client,
+                assignedTo: o.assignedTo,
+                createdAt: o.createdAt
+            })),
+            total: orders.length
+        });
+    } catch (error) {
+        console.error('Orders debug error:', error);
+        res.status(500).json({ success: false, message: 'Server error' });
+    }
+});
+
 // GET /api/users/masters - Get all masters for assignment
 app.get('/api/users/masters', async (req, res) => {
     try {
@@ -799,17 +926,8 @@ app.get('/api/users/masters', async (req, res) => {
 });
 
 // GET /api/manager/users - Get all users for manager dashboard (admin/manager only)
-app.get('/api/manager/users', async (req, res) => {
+app.get('/api/manager/users', authenticateToken, authorizeRoles('admin', 'manager'), async (req, res) => {
     try {
-        const userRole = req.headers['user-role']; // In production, get from JWT
-
-        // Check if user has manager/admin permissions
-        if (userRole !== 'admin' && userRole !== 'manager') {
-            return res.status(403).json({
-                success: false,
-                message: 'Access denied. Manager or admin role required.'
-            });
-        }
 
         const { page = 1, limit = 50, role, search } = req.query;
         const skip = (parseInt(page) - 1) * parseInt(limit);
@@ -855,18 +973,9 @@ app.get('/api/manager/users', async (req, res) => {
 });
 
 // PATCH /api/users/:id/role - Update user role (admin/manager only)
-app.patch('/api/users/:id/role', async (req, res) => {
+app.patch('/api/users/:id/role', authenticateToken, authorizeRoles('admin', 'manager'), async (req, res) => {
     console.log('Role update request received:', req.body);
-    console.log('Headers:', { 'user-id': req.headers['user-id'], 'user-role': req.headers['user-role'] });
     try {
-        // Check if user has manager/admin permissions
-        const userRole = req.headers['user-role'];
-        if (userRole !== 'admin' && userRole !== 'manager') {
-            return res.status(403).json({
-                success: false,
-                message: 'Access denied. Manager or admin role required.'
-            });
-        }
 
         const userId = req.params.id;
         const { role } = req.body;
@@ -906,7 +1015,7 @@ app.patch('/api/users/:id/role', async (req, res) => {
             email: user.email,
             oldRole: user.role,
             newRole: role,
-            updatedBy: req.headers['user-id'],
+            updatedBy: req.user.id,
             timestamp: new Date().toISOString()
         });
 
@@ -931,19 +1040,10 @@ app.patch('/api/users/:id/role', async (req, res) => {
 });
 
 // PUT /api/users/profile - Update user profile
-app.put('/api/users/profile', async (req, res) => {
+app.put('/api/users/profile', authenticateToken, async (req, res) => {
     console.log('Profile update request received:', req.body);
-    console.log('Headers:', { 'user-id': req.headers['user-id'], 'user-role': req.headers['user-role'] });
     try {
-        // Mock authentication - in production, verify JWT token
-        const userId = req.headers['user-id']; // In production, get from JWT
-        if (!userId) {
-            console.log('No user-id in headers');
-            return res.status(401).json({
-                success: false,
-                message: 'Authentication required'
-            });
-        }
+        const userId = req.user.id; // From JWT
 
         // For now, let's try to find user by email if ID doesn't work (fallback for development)
         let user = await User.findById(userId).select('+password');
@@ -1079,8 +1179,10 @@ app.listen(PORT, () => {
     console.log('  POST /api/register');
     console.log('  POST /api/login');
     console.log('  GET  /api/users/debug (debug users)');
+    console.log('  GET  /api/debug/orders (debug orders)');
     console.log('  GET  /api/users/masters (get all masters)');
     console.log('  GET  /api/manager/users (get all users for manager)');
+    console.log('  GET  /reports (reports page)');
     console.log('  PATCH /api/users/:id/role (update user role)');
     console.log('  PUT   /api/users/profile (update user profile)');
     console.log('  POST /api/orders (create order with photos)');
