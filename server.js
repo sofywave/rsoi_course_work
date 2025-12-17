@@ -860,6 +860,161 @@ app.get('/api/manager/orders', authenticateToken, authorizeRoles('admin', 'manag
     }
 });
 
+// Reports API Routes
+
+// GET /api/reports/workload - Get workload report for masters
+app.get('/api/reports/workload', authenticateToken, authorizeRoles('admin', 'manager'), async (req, res) => {
+    try {
+        const { startDate, endDate } = req.query;
+
+        if (!startDate || !endDate) {
+            return res.status(400).json({
+                success: false,
+                message: 'Start date and end date are required'
+            });
+        }
+
+        // Parse dates
+        const start = new Date(startDate);
+        const end = new Date(endDate);
+        end.setHours(23, 59, 59, 999); // Include the entire end date
+
+        // Find all masters
+        const masters = await User.find({ role: 'master' }, '_id fullName email');
+
+        const workloadData = [];
+
+        for (const master of masters) {
+            // Count orders by status for this master within the date range
+            const statusCounts = {};
+            let totalOrders = 0;
+
+            const statuses = ['new', 'clarification', 'in_progress', 'awaiting_payment', 'completed', 'delivered', 'cancelled'];
+
+            for (const status of statuses) {
+                const count = await Order.countDocuments({
+                    assignedTo: master._id,
+                    status: status,
+                    createdAt: { $gte: start, $lte: end }
+                });
+                statusCounts[status] = count;
+                totalOrders += count;
+            }
+
+            if (totalOrders > 0) { // Only include masters with orders
+                workloadData.push({
+                    masterId: master._id,
+                    masterName: master.fullName,
+                    statusCounts,
+                    totalOrders
+                });
+            }
+        }
+
+        // Sort by total orders descending
+        workloadData.sort((a, b) => b.totalOrders - a.totalOrders);
+
+        res.json({
+            success: true,
+            data: workloadData,
+            period: {
+                startDate,
+                endDate
+            }
+        });
+
+    } catch (error) {
+        console.error('Workload report error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Server error while generating workload report'
+        });
+    }
+});
+
+// GET /api/reports/workload/export - Export workload report as Excel
+app.get('/api/reports/workload/export', authenticateToken, authorizeRoles('admin', 'manager'), async (req, res) => {
+    try {
+        const { startDate, endDate } = req.query;
+
+        if (!startDate || !endDate) {
+            return res.status(400).json({
+                success: false,
+                message: 'Start date and end date are required'
+            });
+        }
+
+        // Get workload data
+        const response = await fetch(`${req.protocol}://${req.get('host')}/api/reports/workload?startDate=${startDate}&endDate=${endDate}`, {
+            headers: {
+                'Authorization': req.headers.authorization
+            }
+        });
+
+        const result = await response.json();
+
+        if (!result.success) {
+            throw new Error(result.message);
+        }
+
+        // Create Excel file
+        const ExcelJS = require('exceljs');
+        const workbook = new ExcelJS.Workbook();
+        const worksheet = workbook.addWorksheet('Нагрузка мастеров');
+
+        // Set column headers
+        worksheet.columns = [
+            { header: 'Мастер', key: 'masterName', width: 30 },
+            { header: 'Новые', key: 'new', width: 10 },
+            { header: 'Уточнение', key: 'clarification', width: 12 },
+            { header: 'В работе', key: 'in_progress', width: 12 },
+            { header: 'Ожидает оплаты', key: 'awaiting_payment', width: 15 },
+            { header: 'Выполненные', key: 'completed', width: 12 },
+            { header: 'Доставленные', key: 'delivered', width: 12 },
+            { header: 'Отмененные', key: 'cancelled', width: 12 },
+            { header: 'Всего', key: 'total', width: 10 }
+        ];
+
+        // Style headers
+        worksheet.getRow(1).font = { bold: true };
+        worksheet.getRow(1).fill = {
+            type: 'pattern',
+            pattern: 'solid',
+            fgColor: { argb: 'FFE6E6FA' }
+        };
+
+        // Add data
+        result.data.forEach(item => {
+            worksheet.addRow({
+                masterName: item.masterName,
+                new: item.statusCounts.new || 0,
+                clarification: item.statusCounts.clarification || 0,
+                in_progress: item.statusCounts.in_progress || 0,
+                awaiting_payment: item.statusCounts.awaiting_payment || 0,
+                completed: item.statusCounts.completed || 0,
+                delivered: item.statusCounts.delivered || 0,
+                cancelled: item.statusCounts.cancelled || 0,
+                total: item.totalOrders
+            });
+        });
+
+        // Set response headers
+        res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        res.setHeader('Content-Disposition', `attachment; filename=workload_report_${startDate}_${endDate}.xlsx`);
+
+        // Write to response
+        await workbook.xlsx.write(res);
+        res.end();
+
+    } catch (error) {
+        console.error('Workload export error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Server error while exporting workload report'
+        });
+    }
+});
+
 // User Profile API Routes
 
 // GET /api/users/debug - Debug endpoint to check users

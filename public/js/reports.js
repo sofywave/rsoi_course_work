@@ -105,30 +105,122 @@ function logout() {
     window.location.href = '/';
 }
 
-// Placeholder functions for future report functionality
-function generateSalesReport() {
-    // TODO: Implement sales report generation
-    alert('Функционал отчетов по продажам будет реализован в будущем');
+// Report generation functions
+async function generateWorkloadReport() {
+    const startDate = document.getElementById('startDate').value;
+    const endDate = document.getElementById('endDate').value;
+
+    if (!startDate || !endDate) {
+        alert('Пожалуйста, выберите период для формирования отчета');
+        return;
+    }
+
+    try {
+        const response = await fetch(`/api/reports/workload?startDate=${startDate}&endDate=${endDate}`, {
+            headers: getAuthHeaders()
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            displayWorkloadReport(result.data);
+            document.getElementById('workloadResults').style.display = 'block';
+        } else {
+            throw new Error(result.message);
+        }
+    } catch (error) {
+        console.error('Workload report error:', error);
+        alert('Ошибка при формировании отчета: ' + error.message);
+    }
 }
 
-function generateOrdersReport() {
-    // TODO: Implement orders analysis report
-    alert('Функционал анализа заказов будет реализован в будущем');
+function displayWorkloadReport(data) {
+    const tbody = document.getElementById('workloadTableBody');
+    tbody.innerHTML = '';
+
+    data.forEach(master => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${master.masterName}</td>
+            <td>${master.statusCounts.new || 0}</td>
+            <td>${master.statusCounts.clarification || 0}</td>
+            <td>${master.statusCounts.in_progress || 0}</td>
+            <td>${master.statusCounts.awaiting_payment || 0}</td>
+            <td>${master.statusCounts.completed || 0}</td>
+            <td>${master.statusCounts.delivered || 0}</td>
+            <td>${master.statusCounts.cancelled || 0}</td>
+            <td><strong>${master.totalOrders}</strong></td>
+        `;
+        tbody.appendChild(row);
+    });
 }
 
-function generateMastersReport() {
-    // TODO: Implement masters performance report
-    alert('Функционал статистики работы мастеров будет реализован в будущем');
+async function exportWorkloadReport() {
+    const startDate = document.getElementById('startDate').value;
+    const endDate = document.getElementById('endDate').value;
+
+    if (!startDate || !endDate) {
+        alert('Пожалуйста, сформируйте отчет перед экспортом');
+        return;
+    }
+
+    try {
+        const response = await fetch(`/api/reports/workload/export?startDate=${startDate}&endDate=${endDate}`, {
+            headers: getAuthHeaders()
+        });
+
+        if (response.ok) {
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.style.display = 'none';
+            a.href = url;
+            a.download = `workload_report_${startDate}_${endDate}.xlsx`;
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+        } else {
+            const result = await response.json();
+            throw new Error(result.message);
+        }
+    } catch (error) {
+        console.error('Export error:', error);
+        alert('Ошибка при экспорте отчета: ' + error.message);
+    }
 }
 
-function generateFinancialReport() {
-    // TODO: Implement financial reports
+function printWorkloadReport() {
+    window.print();
+}
+
+// UI management functions
+function showReportSelection() {
+    document.getElementById('reportSelection').style.display = 'block';
+    document.getElementById('workloadReportSection').style.display = 'none';
+    document.getElementById('nonAdminPlaceholder').style.display = 'none';
+}
+
+function showWorkloadReport() {
+    document.getElementById('reportSelection').style.display = 'none';
+    document.getElementById('workloadReportSection').style.display = 'block';
+    document.getElementById('workloadResults').style.display = 'none';
+
+    // Set default date range (current month)
+    const now = new Date();
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+
+    document.getElementById('startDate').value = startOfMonth.toISOString().split('T')[0];
+    document.getElementById('endDate').value = endOfMonth.toISOString().split('T')[0];
+}
+
+function showFinancialReport() {
     alert('Функционал финансовых отчетов будет реализован в будущем');
 }
 
-function generatePeriodReport() {
-    // TODO: Implement period-based reports
-    alert('Функционал отчетов по периодам будет реализован в будущем');
+function showProductionReport() {
+    alert('Функционал планов производства будет реализован в будущем');
 }
 
 // Initialize reports page when DOM is loaded
@@ -142,11 +234,14 @@ document.addEventListener('DOMContentLoaded', function() {
         return;
     }
 
-    // Verify user role (managers, admins, and masters can access reports)
-    if (user.role !== 'admin' && user.role !== 'manager' && user.role !== 'master') {
-        alert('Доступ запрещен');
-        window.location.href = '/';
-        return;
+    // Verify user role (admins and managers can access reports)
+    if (user.role !== 'admin' && user.role !== 'manager') {
+        document.getElementById('nonAdminPlaceholder').style.display = 'block';
+        document.getElementById('reportSelection').style.display = 'none';
+        document.getElementById('workloadReportSection').style.display = 'none';
+    } else {
+        // Show report selection for admins and managers
+        showReportSelection();
     }
 
     // Update user info in header
@@ -181,6 +276,17 @@ document.addEventListener('DOMContentLoaded', function() {
     // Logout
     document.getElementById('logoutBtn').addEventListener('click', logout);
 
+    // Report selection event listeners
+    document.getElementById('workloadReportBtn').addEventListener('click', showWorkloadReport);
+    document.getElementById('financialReportBtn').addEventListener('click', showFinancialReport);
+    document.getElementById('productionReportBtn').addEventListener('click', showProductionReport);
+
+    // Workload report event listeners
+    document.getElementById('backToReportsBtn').addEventListener('click', showReportSelection);
+    document.getElementById('generateWorkloadBtn').addEventListener('click', generateWorkloadReport);
+    document.getElementById('exportWorkloadBtn').addEventListener('click', exportWorkloadReport);
+    document.getElementById('printWorkloadBtn').addEventListener('click', printWorkloadReport);
+
     // Close modals when clicking outside
     window.addEventListener('click', (event) => {
         const profileModal = document.getElementById('profileModal');
@@ -190,5 +296,5 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    console.log('Reports page initialized - functionality will be implemented in future updates');
+    console.log('Reports page initialized for role:', user.role);
 });

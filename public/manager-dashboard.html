@@ -139,11 +139,75 @@
 
         <!-- Reports Section -->
         <section id="reports" class="content-section">
-            <h2 class="section-title">Формирование отчета</h2>
-            <div class="placeholder-content">
-                <h3>Генерация отчетов</h3>
-                <p>Здесь будет возможность формирования различных отчетов по продажам, заказам и работе мастеров.</p>
-                <p><em>Функционал будет реализован при подключении к API сервера.</em></p>
+            <h2 class="section-title">Формирование отчетов</h2>
+
+            <!-- Report Type Selection for Managers/Admins -->
+            <div class="report-selection-section" id="reportSelection" style="display: block;">
+                <h3>Выберите тип отчета</h3>
+                <div class="report-types-grid">
+                    <div class="report-type-card" id="workloadReportBtn">
+                        <div class="report-icon">👥</div>
+                        <h4>Отчет по нагрузке мастеров</h4>
+                        <p>Показывает распределение заказов по мастерам и статусам</p>
+                    </div>
+                    <div class="report-type-card" id="financialReportBtn">
+                        <div class="report-icon">💰</div>
+                        <h4>Финансовый отчет</h4>
+                        <p>Анализ доходов и расходов компании</p>
+                    </div>
+                    <div class="report-type-card" id="productionReportBtn">
+                        <div class="report-icon">📋</div>
+                        <h4>План производства</h4>
+                        <p>Планирование и анализ производственных процессов</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Workload Report Section -->
+            <div class="workload-report-section" id="workloadReportSection" style="display: none;">
+                <div class="report-header">
+                    <h3>Отчет по нагрузке мастеров</h3>
+                    <button class="back-btn" id="backToReportsBtn">&larr; Назад к выбору отчетов</button>
+                </div>
+
+                <div class="report-filters">
+                    <div class="filter-group">
+                        <label for="startDate">Период с:</label>
+                        <input type="date" id="startDate" class="form-input">
+                    </div>
+                    <div class="filter-group">
+                        <label for="endDate">по:</label>
+                        <input type="date" id="endDate" class="form-input">
+                    </div>
+                    <button class="generate-btn" id="generateWorkloadBtn">Сформировать отчет</button>
+                </div>
+
+                <div class="report-results" id="workloadResults" style="display: none;">
+                    <div class="report-actions">
+                        <button class="export-btn" id="exportWorkloadBtn">Экспорт в Excel</button>
+                        <button class="print-btn" id="printWorkloadBtn">Печать</button>
+                    </div>
+                    <div class="workload-table-container">
+                        <table class="workload-table" id="workloadTable">
+                            <thead>
+                                <tr>
+                                    <th>Мастер</th>
+                                    <th>Новые</th>
+                                    <th>Уточнение</th>
+                                    <th>В работе</th>
+                                    <th>Ожидает оплаты</th>
+                                    <th>Выполненные</th>
+                                    <th>Доставленные</th>
+                                    <th>Отмененные</th>
+                                    <th>Всего</th>
+                                </tr>
+                            </thead>
+                            <tbody id="workloadTableBody">
+                                <!-- Data will be populated here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
         </section>
     </main>

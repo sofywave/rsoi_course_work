@@ -1030,4 +1030,165 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Modal functionality moved to global scope
 
+    // Reports functionality
+    setupReportsFunctionality();
+
 });
+
+// Reports functionality
+function setupReportsFunctionality() {
+    // Report selection event listeners
+    const workloadReportBtn = document.getElementById('workloadReportBtn');
+    const financialReportBtn = document.getElementById('financialReportBtn');
+    const productionReportBtn = document.getElementById('productionReportBtn');
+
+    if (workloadReportBtn) {
+        workloadReportBtn.addEventListener('click', showWorkloadReport);
+    }
+    if (financialReportBtn) {
+        financialReportBtn.addEventListener('click', showFinancialReport);
+    }
+    if (productionReportBtn) {
+        productionReportBtn.addEventListener('click', showProductionReport);
+    }
+
+    // Workload report event listeners
+    const backToReportsBtn = document.getElementById('backToReportsBtn');
+    const generateWorkloadBtn = document.getElementById('generateWorkloadBtn');
+    const exportWorkloadBtn = document.getElementById('exportWorkloadBtn');
+    const printWorkloadBtn = document.getElementById('printWorkloadBtn');
+
+    if (backToReportsBtn) {
+        backToReportsBtn.addEventListener('click', showReportSelection);
+    }
+    if (generateWorkloadBtn) {
+        generateWorkloadBtn.addEventListener('click', generateWorkloadReport);
+    }
+    if (exportWorkloadBtn) {
+        exportWorkloadBtn.addEventListener('click', exportWorkloadReport);
+    }
+    if (printWorkloadBtn) {
+        printWorkloadBtn.addEventListener('click', printWorkloadReport);
+    }
+}
+
+function showReportSelection() {
+    document.getElementById('reportSelection').style.display = 'block';
+    document.getElementById('workloadReportSection').style.display = 'none';
+}
+
+function showWorkloadReport() {
+    document.getElementById('reportSelection').style.display = 'none';
+    document.getElementById('workloadReportSection').style.display = 'block';
+    document.getElementById('workloadResults').style.display = 'none';
+
+    // Set default date range (current month)
+    const now = new Date();
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+
+    document.getElementById('startDate').value = startOfMonth.toISOString().split('T')[0];
+    document.getElementById('endDate').value = endOfMonth.toISOString().split('T')[0];
+}
+
+function showFinancialReport() {
+    alert('Функционал финансовых отчетов будет реализован в будущем');
+}
+
+function showProductionReport() {
+    alert('Функционал планов производства будет реализован в будущем');
+}
+
+async function generateWorkloadReport() {
+    const startDate = document.getElementById('startDate').value;
+    const endDate = document.getElementById('endDate').value;
+
+    if (!startDate || !endDate) {
+        alert('Пожалуйста, выберите период для формирования отчета');
+        return;
+    }
+
+    try {
+        const response = await fetch(`/api/reports/workload?startDate=${startDate}&endDate=${endDate}`, {
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            displayWorkloadReport(result.data);
+            document.getElementById('workloadResults').style.display = 'block';
+        } else {
+            throw new Error(result.message);
+        }
+    } catch (error) {
+        console.error('Workload report error:', error);
+        alert('Ошибка при формировании отчета: ' + error.message);
+    }
+}
+
+function displayWorkloadReport(data) {
+    const tbody = document.getElementById('workloadTableBody');
+    tbody.innerHTML = '';
+
+    data.forEach(master => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${master.masterName}</td>
+            <td>${master.statusCounts.new || 0}</td>
+            <td>${master.statusCounts.clarification || 0}</td>
+            <td>${master.statusCounts.in_progress || 0}</td>
+            <td>${master.statusCounts.awaiting_payment || 0}</td>
+            <td>${master.statusCounts.completed || 0}</td>
+            <td>${master.statusCounts.delivered || 0}</td>
+            <td>${master.statusCounts.cancelled || 0}</td>
+            <td><strong>${master.totalOrders}</strong></td>
+        `;
+        tbody.appendChild(row);
+    });
+}
+
+async function exportWorkloadReport() {
+    const startDate = document.getElementById('startDate').value;
+    const endDate = document.getElementById('endDate').value;
+
+    if (!startDate || !endDate) {
+        alert('Пожалуйста, сформируйте отчет перед экспортом');
+        return;
+    }
+
+    try {
+        const response = await fetch(`/api/reports/workload/export?startDate=${startDate}&endDate=${endDate}`, {
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+        });
+
+        if (response.ok) {
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.style.display = 'none';
+            a.href = url;
+            a.download = `workload_report_${startDate}_${endDate}.xlsx`;
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+        } else {
+            const result = await response.json();
+            throw new Error(result.message);
+        }
+    } catch (error) {
+        console.error('Export error:', error);
+        alert('Ошибка при экспорте отчета: ' + error.message);
+    }
+}
+
+function printWorkloadReport() {
+    window.print();
+}
