@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Отчеты - ООО «Панна сувенир»</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/reports.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="dashboard-header">
+        <div class="header-branding">
+            <img src="images/лого без фона.png" alt="ООО «Панна сувенир»" class="header-logo-image">
+            <h1 class="company-name-header">ООО «Панна сувенир»</h1>
+        </div>
+        <nav class="header-nav">
+            <div class="user-info">
+                <div class="user-avatar" id="userAvatar">П</div>
+                <span id="userName" class="user-name-clickable">Загрузка...</span>
+            </div>
+            <button class="logout-btn" id="logoutBtn">Выйти</button>
+        </nav>
+    </header>
+
+    <!-- Main Content -->
+    <main class="reports-container">
+        <div class="reports-header">
+            <h1 class="reports-title">Отчеты и аналитика</h1>
+            <p class="reports-subtitle">Формирование отчетов по продажам, заказам и работе мастеров</p>
+        </div>
+
+        <div class="reports-content">
+            <div class="placeholder-section">
+                <div class="placeholder-icon">📊</div>
+                <h2>Отчеты в разработке</h2>
+                <p>Функционал формирования отчетов находится в стадии разработки.</p>
+                <p>В будущем здесь будут доступны различные виды отчетов:</p>
+                <ul class="reports-list">
+                    <li>📈 Отчеты по продажам</li>
+                    <li>📋 Анализ заказов</li>
+                    <li>👥 Статистика работы мастеров</li>
+                    <li>💰 Финансовые отчеты</li>
+                    <li>📅 Отчеты по периодам</li>
+                </ul>
+                <div class="coming-soon">
+                    <em>Скоро появится...</em>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Profile Modal -->
+    <div class="profile-modal" id="profileModal">
+        <div class="profile-modal-content">
+            <div class="profile-modal-header">
+                <h3 class="profile-modal-title">Редактировать профиль</h3>
+                <button class="profile-modal-close" id="closeProfileModal">&times;</button>
+            </div>
+            <div class="profile-modal-body">
+                <!-- Profile Information Form -->
+                <div class="profile-section-modal">
+                    <h4 class="profile-section-title">Личная информация</h4>
+                    <form class="profile-form-modal">
+                        <div class="form-group-modal">
+                            <label for="modalProfileFullName" class="form-label-modal">Имя и фамилия</label>
+                            <input
+                                type="text"
+                                id="modalProfileFullName"
+                                name="fullName"
+                                class="form-input-modal"
+                                placeholder="Введите ваше имя и фамилию"
+                                required>
+                        </div>
+
+                        <div class="form-group-modal">
+                            <label for="modalProfileEmail" class="form-label-modal">Email</label>
+                            <input
+                                type="email"
+                                id="modalProfileEmail"
+                                name="email"
+                                class="form-input-modal"
+                                placeholder="Введите ваш email"
+                                required>
+                        </div>
+
+                        <button type="submit" class="profile-update-btn-modal">Обновить профиль</button>
+                    </form>
+                </div>
+
+                <!-- Password Change Section -->
+                <div class="password-change-section-modal">
+                    <h4 class="profile-section-title">Изменить пароль</h4>
+                    <form class="password-form-modal">
+                        <div class="form-group-modal">
+                            <label for="modalCurrentPassword" class="form-label-modal">Текущий пароль</label>
+                            <input
+                                type="password"
+                                id="modalCurrentPassword"
+                                name="currentPassword"
+                                class="form-input-modal"
+                                placeholder="Введите текущий пароль"
+                                required>
+                        </div>
+
+                        <div class="form-group-modal">
+                            <label for="modalNewPassword" class="form-label-modal">Новый пароль</label>
+                            <input
+                                type="password"
+                                id="modalNewPassword"
+                                name="newPassword"
+                                class="form-input-modal"
+                                placeholder="Введите новый пароль"
+                                minlength="6"
+                                required>
+                        </div>
+
+                        <div class="form-group-modal">
+                            <label for="modalConfirmNewPassword" class="form-label-modal">Подтвердите новый пароль</label>
+                            <input
+                                type="password"
+                                id="modalConfirmNewPassword"
+                                name="confirmNewPassword"
+                                class="form-input-modal"
+                                placeholder="Подтвердите новый пароль"
+                                required>
+                        </div>
+
+                        <button type="submit" class="password-update-btn-modal">Изменить пароль</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/reports.js"></script>
+</body>
+</html>
