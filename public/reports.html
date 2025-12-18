@@ -3,161 +3,53 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Панель управления - ООО «Панна сувенир»</title>
+    <title>Отчеты - ООО «Панна сувенир»</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/manager-dashboard.css">
+    <link rel="stylesheet" href="css/reports.css">
 </head>
 <body>
     <!-- Header -->
     <header class="dashboard-header">
-        <div class="logo-section">
+        <div class="header-branding">
             <img src="images/лого без фона.png" alt="ООО «Панна сувенир»" class="header-logo-image">
-            <h1>ООО «Панна сувенир»</h1>
+            <h1 class="company-name-header">ООО «Панна сувенир»</h1>
         </div>
-        <div class="user-section">
+        <nav class="header-nav">
             <div class="user-info">
-                <div class="user-avatar" id="userAvatar">ИИ</div>
-                <span id="userName" class="user-name user-name-clickable">Загрузка...</span>
+                <div class="user-avatar" id="userAvatar">П</div>
+                <span id="userName" class="user-name-clickable">Загрузка...</span>
             </div>
             <button class="logout-btn" id="logoutBtn">Выйти</button>
-        </div>
+        </nav>
     </header>
 
-    <!-- Navigation -->
-    <nav>
-        <div class="nav-buttons">
-            <button class="nav-btn active" data-section="orders">📋 Управление заказами</button>
-            <button class="nav-btn" data-section="users">👤 Управление пользователями</button>
-            <button class="nav-btn" data-section="reports">📊 Формирование отчета</button>
-        </div>
-    </nav>
-
     <!-- Main Content -->
-    <main>
-        <!-- Orders Management Section -->
-        <section id="orders" class="content-section active">
-            <h2 class="section-title">Управление заказами</h2>
+    <main class="reports-container">
+        <div class="reports-header">
+            <h1 class="reports-title">Отчеты и аналитика</h1>
+            <p class="reports-subtitle">Формирование отчетов по продажам, заказам и работе мастеров</p>
+        </div>
 
-            <!-- Orders Controls -->
-            <div class="orders-controls">
-                <div class="filters">
-                    <select id="statusFilter">
-                        <option value="">Все статусы</option>
-                        <option value="new">Новый</option>
-                        <option value="clarification">Уточнение</option>
-                        <option value="in_progress">В работе</option>
-                        <option value="awaiting_payment">Ожидает оплаты</option>
-                        <option value="completed">Завершен</option>
-                        <option value="delivered">Доставлен</option>
-                        <option value="cancelled">Отменен</option>
-                    </select>
-                </div>
-                <div class="search">
-                    <input type="text" id="searchInput" placeholder="Поиск по номеру заказа или клиенту...">
-                </div>
-                <button id="refreshOrders" class="refresh-btn">🔄 Обновить</button>
-            </div>
-
-            <!-- Orders Table -->
-            <div class="orders-container">
-                <div id="loadingSpinner" class="loading-spinner" style="display: none;">
-                    <p>Загрузка заказов...</p>
-                </div>
-                <div id="errorMessage" class="error-message" style="display: none;"></div>
-                <table id="ordersTable" class="orders-table" style="display: none;">
-                    <thead>
-                        <tr>
-                            <th>Номер заказа</th>
-                            <th>Клиент</th>
-                            <th>Статус</th>
-                            <th>Тип изделия</th>
-                            <th>Цена</th>
-                            <th>Дедлайн</th>
-                            <th>Мастер</th>
-                            <th>Действия</th>
-                        </tr>
-                    </thead>
-                    <tbody id="ordersTableBody">
-                        <!-- Orders will be populated here -->
-                    </tbody>
-                </table>
-                <div id="noOrdersMessage" class="no-orders-message" style="display: none;">
-                    <p>Заказы не найдены.</p>
-                </div>
-            </div>
-        </section>
-
-
-        <!-- Users Management Section -->
-        <section id="users" class="content-section">
-            <h2 class="section-title">Управление пользователями</h2>
-
-            <!-- Users Controls -->
-            <div class="users-controls">
-                <div class="filters">
-                    <select id="userRoleFilter">
-                        <option value="">Все роли</option>
-                        <option value="client">Клиент</option>
-                        <option value="master">Мастер</option>
-                        <option value="admin">Администратор</option>
-                    </select>
-                </div>
-                <div class="search">
-                    <input type="text" id="userSearchInput" placeholder="Поиск по имени или email...">
-                </div>
-                <button id="refreshUsers" class="refresh-btn">🔄 Обновить</button>
-            </div>
-
-            <!-- Users Table -->
-            <div class="users-container">
-                <div id="usersLoadingSpinner" class="loading-spinner" style="display: none;">
-                    <p>Загрузка пользователей...</p>
-                </div>
-                <div id="usersErrorMessage" class="error-message" style="display: none;"></div>
-                <table id="usersTable" class="users-table" style="display: none;">
-                    <thead>
-                        <tr>
-                            <th>Имя</th>
-                            <th>Email</th>
-                            <th>Роль</th>
-                            <th>Телефон</th>
-                            <th>Дата регистрации</th>
-                            <th>Действия</th>
-                        </tr>
-                    </thead>
-                    <tbody id="usersTableBody">
-                        <!-- Users will be populated here -->
-                    </tbody>
-                </table>
-                <div id="noUsersMessage" class="no-users-message" style="display: none;">
-                    <p>Пользователи не найдены.</p>
-                </div>
-            </div>
-        </section>
-
-        <!-- Reports Section -->
-        <section id="reports" class="content-section">
-            <h2 class="section-title">Формирование отчетов</h2>
-
-            <!-- Report Type Selection for Managers/Admins -->
-            <div class="report-selection-section" id="reportSelection" style="display: block;">
-                <h3>Выберите тип отчета</h3>
+        <div class="reports-content">
+            <!-- Report Type Selection for Admins -->
+            <div class="report-selection-section" id="reportSelection" style="display: none;">
+                <h2>Выберите тип отчета</h2>
                 <div class="report-types-grid">
                     <div class="report-type-card" id="workloadReportBtn">
                         <div class="report-icon">👥</div>
-                        <h4>Отчет по нагрузке мастеров</h4>
+                        <h3>Отчет по нагрузке мастеров</h3>
                         <p>Показывает распределение заказов по мастерам и статусам</p>
                     </div>
                     <div class="report-type-card" id="financialReportBtn">
                         <div class="report-icon">💰</div>
-                        <h4>Финансовый отчет</h4>
+                        <h3>Финансовый отчет</h3>
                         <p>Анализ доходов и расходов компании</p>
                     </div>
                     <div class="report-type-card" id="productionReportBtn">
                         <div class="report-icon">📋</div>
-                        <h4>План производства</h4>
+                        <h3>План производства</h3>
                         <p>Планирование и анализ производственных процессов</p>
                     </div>
                 </div>
@@ -166,7 +58,7 @@
             <!-- Workload Report Section -->
             <div class="workload-report-section" id="workloadReportSection" style="display: none;">
                 <div class="report-header">
-                    <h3>Отчет по нагрузке мастеров</h3>
+                    <h2>Отчет по нагрузке мастеров</h2>
                     <button class="back-btn" id="backToReportsBtn">&larr; Назад к выбору отчетов</button>
                 </div>
 
@@ -213,7 +105,7 @@
             <!-- Production Plan Section -->
             <div class="production-plan-section" id="productionPlanSection" style="display: none;">
                 <div class="report-header">
-                    <h3>План производства</h3>
+                    <h2>План производства</h2>
                     <button class="back-btn" id="backToReportsBtn2">&larr; Назад к выбору отчетов</button>
                 </div>
 
@@ -258,7 +150,7 @@
             <!-- Financial Report Section -->
             <div class="financial-report-section" id="financialReportSection" style="display: none;">
                 <div class="report-header">
-                    <h3>Финансовый отчет</h3>
+                    <h2>Финансовый отчет</h2>
                     <button class="back-btn" id="backToReportsBtn3">&larr; Назад к выбору отчетов</button>
                 </div>
 
@@ -303,114 +195,9 @@
                     </div>
                 </div>
             </div>
-        </section>
+
+        </div>
     </main>
-
-    <!-- Order Details Modal -->
-    <div id="orderDetailsModal" class="modal">
-        <div class="modal-content order-details-modal">
-            <span class="close-button" id="closeOrderModal">&times;</span>
-
-            <!-- Loading State -->
-            <div id="orderModalLoading" class="modal-loading" style="display: none;">
-                <p>Загрузка данных заказа...</p>
-            </div>
-
-            <!-- Error State -->
-            <div id="orderModalError" class="modal-error" style="display: none;">
-                <p>Данные не загружены</p>
-            </div>
-
-            <!-- Order Details Content -->
-            <div id="orderModalContent" class="modal-body" style="display: none;">
-                <!-- Basic Details Section -->
-                <div class="order-section">
-                    <h2 class="order-number" id="modalOrderNumber">ЗК-2024-001</h2>
-                    <div class="order-meta">
-                        <span class="order-status" id="modalOrderStatus">Новый</span>
-                        <span class="order-date" id="modalOrderCreated">Создан: 01.01.2024</span>
-                        <span class="order-date" id="modalOrderUpdated">Обновлен: 01.01.2024</span>
-                    </div>
-                </div>
-
-                <!-- Client Information Section -->
-                <div class="order-section">
-                    <h3>Информация о клиенте</h3>
-                    <div class="client-info">
-                        <div class="info-row">
-                            <strong>Имя:</strong> <span id="modalClientName">Не указано</span>
-                        </div>
-                        <div class="info-row">
-                            <strong>Email:</strong> <span id="modalClientEmail">Не указан</span>
-                        </div>
-                        <div class="info-row">
-                            <strong>Телефон:</strong> <span id="modalClientPhone">Не указан</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Order Specifications Section -->
-                <div class="order-section">
-                    <h3>Спецификация заказа</h3>
-                    <div class="order-specs">
-                        <div class="info-row">
-                            <strong>Тип изделия:</strong> <span id="modalProductType">Не указан</span>
-                        </div>
-                        <div class="info-row">
-                            <strong>Диапазон цен:</strong> <span id="modalPriceRange">Не указан</span>
-                        </div>
-                        <div class="info-row">
-                            <strong>Фиксированная цена:</strong> <input type="number" id="modalFixedPrice" step="0.01" placeholder="Не указана">
-                        </div>
-                        <div class="info-row">
-                            <strong>Дедлайн:</strong> <input type="date" id="modalDeadline">
-                        </div>
-                        <div class="info-row">
-                            <strong>Назначенный мастер:</strong>
-                            <select id="modalAssignedMaster">
-                                <option value="">Не назначен</option>
-                            </select>
-                        </div>
-                        <div class="info-row description-row">
-                            <strong>Описание:</strong>
-                            <div class="description-text" id="modalDescription">Описание отсутствует</div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Attachments Section -->
-                <div class="order-section">
-                    <h3>Прикрепленные файлы</h3>
-                    <div id="modalAttachments" class="attachments-section">
-                        <div class="no-attachments">Файлы не прикреплены</div>
-                    </div>
-                </div>
-
-                <!-- Action Buttons -->
-                <div class="modal-actions">
-                    <button id="saveOrderChanges" class="action-btn primary">Сохранить изменения</button>
-                    <button id="copyOrderNumber" class="action-btn secondary">Скопировать номер заказа</button>
-                </div>
-                <div id="saveSuccessMessage" class="save-success-message" style="display: none;">Изменения сохранены</div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Image Gallery Modal -->
-    <div id="imageGalleryModal" class="modal image-gallery-modal">
-        <div class="modal-content gallery-content">
-            <span class="close-button" id="closeGalleryModal">&times;</span>
-            <div class="gallery-container">
-                <button class="gallery-nav prev" id="galleryPrev">&lt;</button>
-                <img id="galleryImage" src="" alt="Order photo" class="gallery-image">
-                <button class="gallery-nav next" id="galleryNext">&gt;</button>
-            </div>
-            <div class="gallery-info">
-                <span id="galleryCounter">1 / 1</span>
-                <span id="galleryFilename">filename.jpg</span>
-            </div>
-        </div>
-    </div>
 
     <!-- Profile Modal -->
     <div class="profile-modal" id="profileModal">
@@ -495,6 +282,6 @@
         </div>
     </div>
 
-    <script src="js/manager-dashboard.js"></script>
+    <script src="js/reports.js"></script>
 </body>
 </html>

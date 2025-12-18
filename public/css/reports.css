@@ -1,0 +1,977 @@
+/* Reports Page Styles */
+
+/* Reset and Base Styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Roboto', sans-serif;
+    background-color: #FFFFFF;
+    color: #333333;
+    line-height: 1.6;
+}
+
+/* Header */
+.dashboard-header {
+    background-color: #FFFFFF;
+    border-bottom: 2px solid #F5F5F5;
+    padding: 1rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+.header-branding {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.company-name-header {
+    font-size: 1.5rem;
+    font-weight: 700;
+}
+
+.header-logo-image {
+    width: 70px;
+    height: 70px;
+    object-fit: contain;
+    border-radius: 8px;
+}
+
+.header-nav {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+}
+
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 500;
+}
+
+.user-name-clickable {
+    cursor: pointer;
+    transition: color 0.3s ease;
+}
+
+.user-name-clickable:hover {
+    color: #CC7722;
+}
+
+.user-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background-color: #CC7722;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.logout-btn {
+    background: linear-gradient(135deg, #CC7722 0%, #B8651A 100%);
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.logout-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(204, 119, 34, 0.3);
+}
+
+/* Main Content */
+.reports-container {
+    min-height: calc(100vh - 80px);
+    padding: 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.reports-header {
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+.reports-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #000000;
+    margin-bottom: 0.5rem;
+}
+
+.reports-subtitle {
+    font-size: 1.1rem;
+    color: #666666;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.reports-content {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 400px;
+}
+
+.placeholder-section {
+    text-align: center;
+    padding: 3rem;
+    background: linear-gradient(135deg, #F8F9FA 0%, #E9ECEF 100%);
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    max-width: 600px;
+    width: 100%;
+}
+
+.placeholder-icon {
+    font-size: 4rem;
+    margin-bottom: 1.5rem;
+    opacity: 0.7;
+}
+
+.placeholder-section h2 {
+    font-size: 1.8rem;
+    font-weight: 600;
+    color: #000000;
+    margin-bottom: 1rem;
+}
+
+.placeholder-section p {
+    color: #666666;
+    margin-bottom: 1rem;
+    line-height: 1.6;
+}
+
+.reports-list {
+    text-align: left;
+    margin: 2rem auto;
+    max-width: 400px;
+    list-style: none;
+    padding: 0;
+}
+
+.reports-list li {
+    padding: 0.5rem 0;
+    color: #555555;
+    border-bottom: 1px solid #E0E0E0;
+}
+
+.reports-list li:last-child {
+    border-bottom: none;
+}
+
+.coming-soon {
+    margin-top: 2rem;
+    padding: 1rem;
+    background: linear-gradient(135deg, #CC7722 0%, #B8651A 100%);
+    color: white;
+    border-radius: 8px;
+    font-size: 1.1rem;
+    font-weight: 500;
+}
+
+/* Profile Modal Styles */
+.profile-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 3000;
+    animation: fadeIn 0.3s ease;
+}
+
+.profile-modal.show {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.profile-modal-content {
+    background-color: white;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    max-width: 500px;
+    width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
+    animation: slideUp 0.3s ease;
+}
+
+.profile-modal-header {
+    padding: 1.5rem 2rem;
+    border-bottom: 1px solid #E0E0E0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.profile-modal-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #000000;
+    margin: 0;
+}
+
+.profile-modal-close {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    color: #666666;
+    cursor: pointer;
+    padding: 0;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+}
+
+.profile-modal-close:hover {
+    background-color: #F5F5F5;
+    color: #333333;
+}
+
+.profile-modal-body {
+    padding: 2rem;
+}
+
+.profile-section-modal {
+    margin-bottom: 2rem;
+}
+
+.profile-section-title {
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: #000000;
+}
+
+.profile-form-modal,
+.password-form-modal {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.form-group-modal {
+    margin-bottom: 1.5rem;
+}
+
+.form-label-modal {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    color: #333333;
+    font-size: 0.9rem;
+}
+
+.form-input-modal {
+    width: 100%;
+    padding: 0.75rem;
+    border: 2px solid #E0E0E0;
+    border-radius: 6px;
+    font-family: inherit;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    background-color: #FFFFFF;
+}
+
+.form-input-modal:focus {
+    outline: none;
+    border-color: #CC7722;
+    box-shadow: 0 0 0 3px rgba(204, 119, 34, 0.1);
+}
+
+.password-change-section-modal {
+    border-top: 1px solid #E0E0E0;
+    padding-top: 2rem;
+}
+
+.profile-update-btn-modal,
+.password-update-btn-modal {
+    background: linear-gradient(135deg, #CC7722 0%, #B8651A 100%);
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 6px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    align-self: flex-start;
+    margin-top: 0.5rem;
+}
+
+.profile-update-btn-modal:hover,
+.password-update-btn-modal:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(204, 119, 34, 0.3);
+}
+
+.profile-update-btn-modal:disabled,
+.password-update-btn-modal:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .dashboard-header {
+        padding: 1rem;
+        flex-direction: column;
+        gap: 1rem;
+        align-items: stretch;
+    }
+
+    .header-nav {
+        justify-content: space-between;
+        gap: 1rem;
+    }
+
+    .reports-container {
+        padding: 1rem;
+    }
+
+    .reports-title {
+        font-size: 2rem;
+    }
+
+    .reports-subtitle {
+        font-size: 1rem;
+    }
+
+    .placeholder-section {
+        padding: 2rem 1.5rem;
+        margin: 0 1rem;
+    }
+
+    .placeholder-icon {
+        font-size: 3rem;
+    }
+
+    .placeholder-section h2 {
+        font-size: 1.5rem;
+    }
+
+    .reports-list {
+        margin: 1.5rem auto;
+    }
+}
+
+@media (max-width: 480px) {
+    .dashboard-header {
+        padding: 0.75rem;
+    }
+
+    .company-name-header {
+        font-size: 1.2rem;
+    }
+
+    .header-logo-image {
+        width: 60px;
+        height: 60px;
+    }
+
+    .user-info {
+        font-size: 0.9rem;
+    }
+
+    .logout-btn {
+        padding: 6px 12px;
+        font-size: 0.8rem;
+    }
+
+    .reports-container {
+        padding: 0.5rem;
+    }
+
+    .reports-title {
+        font-size: 1.5rem;
+    }
+
+    .reports-header {
+        margin-bottom: 2rem;
+    }
+
+    .placeholder-section {
+        padding: 1.5rem 1rem;
+        margin: 0;
+    }
+
+    .placeholder-icon {
+        font-size: 2.5rem;
+    }
+
+    .reports-list {
+        margin: 1rem auto;
+    }
+
+    .reports-list li {
+        font-size: 0.9rem;
+        padding: 0.4rem 0;
+    }
+}
+
+/* Report Selection Styles */
+.report-selection-section {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 2rem 0;
+}
+
+.report-selection-section h2 {
+    text-align: center;
+    color: #2c3e50;
+    margin-bottom: 2rem;
+    font-size: 1.8rem;
+}
+
+.report-types-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+    margin-top: 2rem;
+}
+
+.report-type-card {
+    background: white;
+    border: 2px solid #e1e8ed;
+    border-radius: 12px;
+    padding: 2rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.report-type-card:hover {
+    border-color: #3498db;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+
+.report-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    display: block;
+}
+
+.report-type-card h3 {
+    color: #2c3e50;
+    margin-bottom: 0.5rem;
+    font-size: 1.3rem;
+}
+
+.report-type-card p {
+    color: #7f8c8d;
+    font-size: 0.95rem;
+    line-height: 1.4;
+}
+
+/* Workload Report Styles */
+.workload-report-section {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.report-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid #ecf0f1;
+}
+
+.report-header h2 {
+    color: #2c3e50;
+    margin: 0;
+    font-size: 1.8rem;
+}
+
+.back-btn {
+    background: #95a5a6;
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    transition: background-color 0.3s ease;
+}
+
+.back-btn:hover {
+    background: #7f8c8d;
+}
+
+.report-filters {
+    background: #f8f9fa;
+    padding: 2rem;
+    border-radius: 8px;
+    margin-bottom: 2rem;
+    border: 1px solid #e1e8ed;
+}
+
+.filter-group {
+    display: inline-block;
+    margin-right: 2rem;
+    margin-bottom: 1rem;
+}
+
+.filter-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    color: #2c3e50;
+}
+
+.form-input {
+    padding: 0.75rem;
+    border: 1px solid #bdc3c7;
+    border-radius: 4px;
+    font-size: 1rem;
+    width: 180px;
+}
+
+.generate-btn {
+    background: #3498db;
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    font-weight: 600;
+    transition: background-color 0.3s ease;
+    margin-top: 1.5rem;
+}
+
+.generate-btn:hover {
+    background: #2980b9;
+}
+
+.report-results {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
+.report-actions {
+    padding: 1.5rem;
+    background: #f8f9fa;
+    border-bottom: 1px solid #e1e8ed;
+    display: flex;
+    gap: 1rem;
+}
+
+.export-btn, .print-btn {
+    background: #27ae60;
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    font-weight: 600;
+    transition: background-color 0.3s ease;
+}
+
+.print-btn {
+    background: #e67e22;
+}
+
+.export-btn:hover {
+    background: #229954;
+}
+
+.print-btn:hover {
+    background: #d35400;
+}
+
+.workload-table-container {
+    overflow-x: auto;
+}
+
+.workload-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+}
+
+.workload-table th,
+.workload-table td {
+    padding: 1rem 0.75rem;
+    text-align: center;
+    border-bottom: 1px solid #e1e8ed;
+}
+
+.workload-table th {
+    background: #f8f9fa;
+    font-weight: 600;
+    color: #2c3e50;
+    border-bottom: 2px solid #bdc3c7;
+}
+
+.workload-table tr:nth-child(even) {
+    background: #f8f9fa;
+}
+
+.workload-table tr:hover {
+    background: #ecf0f1;
+}
+
+.workload-table td:first-child {
+    text-align: left;
+    font-weight: 500;
+}
+
+/* Print styles */
+@media print {
+    .dashboard-header,
+    .report-filters,
+    .report-actions,
+    .back-btn {
+        display: none !important;
+    }
+
+    .workload-report-section {
+        margin: 0;
+    }
+
+    .report-header {
+        border-bottom: 2px solid #000;
+        margin-bottom: 1rem;
+    }
+
+    .workload-table {
+        font-size: 12px;
+    }
+
+    .workload-table th,
+    .workload-table td {
+        padding: 0.5rem 0.25rem;
+    }
+}
+
+/* Production Plan Styles */
+.production-plan-section {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.plan-summary {
+    background: #f8f9fa;
+    padding: 1.5rem;
+    border-radius: 8px;
+    margin-bottom: 2rem;
+    text-align: center;
+    border: 1px solid #e1e8ed;
+}
+
+.plan-summary h3 {
+    color: #2c3e50;
+    margin: 0;
+    font-size: 1.4rem;
+}
+
+.production-plan-container {
+    overflow-x: auto;
+}
+
+.production-plan-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+    margin-top: 1rem;
+}
+
+.production-plan-table th,
+.production-plan-table td {
+    padding: 1rem 0.75rem;
+    text-align: left;
+    border-bottom: 1px solid #e1e8ed;
+}
+
+.production-plan-table th {
+    background: #f8f9fa;
+    font-weight: 600;
+    color: #2c3e50;
+    border-bottom: 2px solid #bdc3c7;
+}
+
+.production-plan-table tr:nth-child(even) {
+    background: #f8f9fa;
+}
+
+.production-plan-table tr:hover {
+    background: #ecf0f1;
+}
+
+.production-plan-table td:nth-child(3) {
+    font-weight: bold;
+    color: #e67e22;
+    text-align: center;
+}
+
+.production-plan-table td:nth-child(4) {
+    font-family: monospace;
+    font-size: 0.85rem;
+}
+
+/* Print styles for production plan */
+@media print {
+    .dashboard-header,
+    .report-filters,
+    .report-actions,
+    .back-btn {
+        display: none !important;
+    }
+
+    .production-plan-section {
+        margin: 0;
+    }
+
+    .report-header {
+        border-bottom: 2px solid #000;
+        margin-bottom: 1rem;
+    }
+
+    .production-plan-table {
+        font-size: 12px;
+    }
+
+    .production-plan-table th,
+    .production-plan-table td {
+        padding: 0.5rem 0.25rem;
+    }
+
+    .plan-summary {
+        background: white !important;
+        border: 2px solid #000;
+    }
+}
+
+/* Financial Report Styles */
+.financial-report-section {
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.financial-summary {
+    background: #f8f9fa;
+    padding: 2rem;
+    border-radius: 8px;
+    margin-bottom: 2rem;
+    border: 1px solid #e1e8ed;
+}
+
+.financial-metrics {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+}
+
+.metric-card {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 8px;
+    text-align: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.metric-card h4 {
+    color: #2c3e50;
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.metric-value {
+    font-size: 1.8rem;
+    font-weight: bold;
+    color: #e67e22;
+}
+
+.financial-report-container {
+    overflow-x: auto;
+}
+
+.financial-report-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+    margin-top: 1rem;
+}
+
+.financial-report-table th,
+.financial-report-table td {
+    padding: 0.75rem 0.5rem;
+    text-align: left;
+    border-bottom: 1px solid #e1e8ed;
+}
+
+.financial-report-table th {
+    background: #f8f9fa;
+    font-weight: 600;
+    color: #2c3e50;
+    border-bottom: 2px solid #bdc3c7;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.financial-report-table tr:nth-child(even) {
+    background: #f8f9fa;
+}
+
+.financial-report-table tr:hover {
+    background: #ecf0f1;
+}
+
+.financial-report-table td:nth-child(6) {
+    font-weight: bold;
+    color: #27ae60;
+    text-align: right;
+}
+
+.financial-report-table td:nth-child(5) {
+    font-weight: 500;
+}
+
+/* Print styles for financial report */
+@media print {
+    .dashboard-header,
+    .report-filters,
+    .report-actions,
+    .back-btn {
+        display: none !important;
+    }
+
+    .financial-report-section {
+        margin: 0;
+    }
+
+    .report-header {
+        border-bottom: 2px solid #000;
+        margin-bottom: 1rem;
+    }
+
+    .financial-report-table {
+        font-size: 10px;
+    }
+
+    .financial-report-table th,
+    .financial-report-table td {
+        padding: 0.3rem 0.2rem;
+    }
+
+    .financial-summary {
+        background: white !important;
+        border: 2px solid #000;
+        page-break-inside: avoid;
+    }
+
+    .financial-metrics {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1rem;
+    }
+
+    .metric-card {
+        padding: 1rem;
+        box-shadow: none;
+        border: 1px solid #000;
+    }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .report-types-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .report-header {
+        flex-direction: column;
+        gap: 1rem;
+        text-align: center;
+    }
+
+    .filter-group {
+        display: block;
+        margin-right: 0;
+        margin-bottom: 1rem;
+    }
+
+    .form-input {
+        width: 100%;
+    }
+
+    .report-actions {
+        flex-direction: column;
+    }
+
+    .workload-table,
+    .production-plan-table,
+    .financial-report-table {
+        font-size: 0.75rem;
+    }
+
+    .workload-table th,
+    .workload-table td,
+    .production-plan-table th,
+    .production-plan-table td,
+    .financial-report-table th,
+    .financial-report-table td {
+        padding: 0.4rem 0.2rem;
+    }
+
+    .plan-summary h3,
+    .metric-value {
+        font-size: 1.2rem;
+    }
+
+    .financial-metrics {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+}
