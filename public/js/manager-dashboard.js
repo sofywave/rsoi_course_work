@@ -1070,6 +1070,44 @@ function setupReportsFunctionality() {
     if (printWorkloadBtn) {
         printWorkloadBtn.addEventListener('click', printWorkloadReport);
     }
+
+    // Production plan event listeners
+    const backToReportsBtn2 = document.getElementById('backToReportsBtn2');
+    const generateProductionPlanBtn = document.getElementById('generateProductionPlanBtn');
+    const exportProductionPlanBtn = document.getElementById('exportProductionPlanBtn');
+    const printProductionPlanBtn = document.getElementById('printProductionPlanBtn');
+
+    if (backToReportsBtn2) {
+        backToReportsBtn2.addEventListener('click', showReportSelection);
+    }
+    if (generateProductionPlanBtn) {
+        generateProductionPlanBtn.addEventListener('click', generateProductionPlan);
+    }
+    if (exportProductionPlanBtn) {
+        exportProductionPlanBtn.addEventListener('click', exportProductionPlan);
+    }
+    if (printProductionPlanBtn) {
+        printProductionPlanBtn.addEventListener('click', printProductionPlan);
+    }
+
+    // Financial report event listeners
+    const backToReportsBtn3 = document.getElementById('backToReportsBtn3');
+    const generateFinancialReportBtn = document.getElementById('generateFinancialReportBtn');
+    const exportFinancialReportBtn = document.getElementById('exportFinancialReportBtn');
+    const printFinancialReportBtn = document.getElementById('printFinancialReportBtn');
+
+    if (backToReportsBtn3) {
+        backToReportsBtn3.addEventListener('click', showReportSelection);
+    }
+    if (generateFinancialReportBtn) {
+        generateFinancialReportBtn.addEventListener('click', generateFinancialReport);
+    }
+    if (exportFinancialReportBtn) {
+        exportFinancialReportBtn.addEventListener('click', exportFinancialReport);
+    }
+    if (printFinancialReportBtn) {
+        printFinancialReportBtn.addEventListener('click', printFinancialReport);
+    }
 }
 
 function showReportSelection() {
@@ -1092,11 +1130,31 @@ function showWorkloadReport() {
 }
 
 function showFinancialReport() {
-    alert('Функционал финансовых отчетов будет реализован в будущем');
+    document.getElementById('reportSelection').style.display = 'none';
+    document.getElementById('financialReportSection').style.display = 'block';
+    document.getElementById('financialReportResults').style.display = 'none';
+
+    // Set default date range (current month)
+    const now = new Date();
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+
+    document.getElementById('financialStartDate').value = startOfMonth.toISOString().split('T')[0];
+    document.getElementById('financialEndDate').value = endOfMonth.toISOString().split('T')[0];
 }
 
 function showProductionReport() {
-    alert('Функционал планов производства будет реализован в будущем');
+    document.getElementById('reportSelection').style.display = 'none';
+    document.getElementById('productionPlanSection').style.display = 'block';
+    document.getElementById('productionPlanResults').style.display = 'none';
+
+    // Set default date range (current month)
+    const now = new Date();
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+
+    document.getElementById('planStartDate').value = startOfMonth.toISOString().split('T')[0];
+    document.getElementById('planEndDate').value = endOfMonth.toISOString().split('T')[0];
 }
 
 async function generateWorkloadReport() {
@@ -1190,5 +1248,215 @@ async function exportWorkloadReport() {
 }
 
 function printWorkloadReport() {
+    window.print();
+}
+
+// Production Plan functions
+async function generateProductionPlan() {
+    const startDate = document.getElementById('planStartDate').value;
+    const endDate = document.getElementById('planEndDate').value;
+
+    if (!startDate || !endDate) {
+        alert('Пожалуйста, выберите период для формирования плана');
+        return;
+    }
+
+    try {
+        const response = await fetch(`/api/reports/production-plan?startDate=${startDate}&endDate=${endDate}`, {
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            displayProductionPlan(result.data, result.totalOrders);
+            document.getElementById('productionPlanResults').style.display = 'block';
+        } else {
+            throw new Error(result.message);
+        }
+    } catch (error) {
+        console.error('Production plan error:', error);
+        alert('Ошибка при формировании плана производства: ' + error.message);
+    }
+}
+
+function displayProductionPlan(data, totalOrders) {
+    const tbody = document.getElementById('productionPlanTableBody');
+    const summary = document.getElementById('planSummary');
+
+    tbody.innerHTML = '';
+    summary.innerHTML = `<h3>Итого: ${totalOrders} заказов в производстве</h3>`;
+
+    data.forEach(item => {
+        const row = document.createElement('tr');
+        const orderNumbers = item.orders.map(order => order.orderNumber).join(', ');
+
+        row.innerHTML = `
+            <td>${item.productType}</td>
+            <td>${item.priceRange}</td>
+            <td><strong>${item.quantity}</strong></td>
+            <td>${orderNumbers}</td>
+        `;
+        tbody.appendChild(row);
+    });
+}
+
+async function exportProductionPlan() {
+    const startDate = document.getElementById('planStartDate').value;
+    const endDate = document.getElementById('planEndDate').value;
+
+    if (!startDate || !endDate) {
+        alert('Пожалуйста, сформируйте план перед экспортом');
+        return;
+    }
+
+    try {
+        const response = await fetch(`/api/reports/production-plan/export?startDate=${startDate}&endDate=${endDate}`, {
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+        });
+
+        if (response.ok) {
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.style.display = 'none';
+            a.href = url;
+            a.download = `production_plan_${startDate}_${endDate}.xlsx`;
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+        } else {
+            const result = await response.json();
+            throw new Error(result.message);
+        }
+    } catch (error) {
+        console.error('Export error:', error);
+        alert('Ошибка при экспорте плана производства: ' + error.message);
+    }
+}
+
+function printProductionPlan() {
+    window.print();
+}
+
+// Financial Report functions
+async function generateFinancialReport() {
+    const startDate = document.getElementById('financialStartDate').value;
+    const endDate = document.getElementById('financialEndDate').value;
+
+    if (!startDate || !endDate) {
+        alert('Пожалуйста, выберите период для формирования отчета');
+        return;
+    }
+
+    try {
+        const response = await fetch(`/api/reports/financial?startDate=${startDate}&endDate=${endDate}`, {
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            displayFinancialReport(result.data);
+            document.getElementById('financialReportResults').style.display = 'block';
+        } else {
+            throw new Error(result.message);
+        }
+    } catch (error) {
+        console.error('Financial report error:', error);
+        alert('Ошибка при формировании финансового отчета: ' + error.message);
+    }
+}
+
+function displayFinancialReport(data) {
+    const tbody = document.getElementById('financialReportTableBody');
+    const summary = document.getElementById('financialSummary');
+
+    tbody.innerHTML = '';
+
+    // Display summary
+    summary.innerHTML = `
+        <div class="financial-metrics">
+            <div class="metric-card">
+                <h4>Всего заказов</h4>
+                <span class="metric-value">${data.summary.totalOrders}</span>
+            </div>
+            <div class="metric-card">
+                <h4>Общая выручка</h4>
+                <span class="metric-value">${data.summary.totalRevenue.toFixed(2)} BYN</span>
+            </div>
+            <div class="metric-card">
+                <h4>Средняя цена заказа</h4>
+                <span class="metric-value">${data.summary.averagePrice.toFixed(2)} BYN</span>
+            </div>
+        </div>
+    `;
+
+    // Display order details
+    data.orders.forEach(order => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${order.orderNumber}</td>
+            <td>${order.clientName}</td>
+            <td>${order.masterName}</td>
+            <td>${order.productType}</td>
+            <td>${order.status === 'completed' ? 'Завершен' : 'Доставлен'}</td>
+            <td><strong>${order.price.toFixed(2)} BYN</strong></td>
+            <td>${order.createdAt}</td>
+            <td>${order.completedAt}</td>
+        `;
+        tbody.appendChild(row);
+    });
+}
+
+async function exportFinancialReport() {
+    const startDate = document.getElementById('financialStartDate').value;
+    const endDate = document.getElementById('financialEndDate').value;
+
+    if (!startDate || !endDate) {
+        alert('Пожалуйста, сформируйте отчет перед экспортом');
+        return;
+    }
+
+    try {
+        const response = await fetch(`/api/reports/financial/export?startDate=${startDate}&endDate=${endDate}`, {
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+        });
+
+        if (response.ok) {
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.style.display = 'none';
+            a.href = url;
+            a.download = `financial_report_${startDate}_${endDate}.xlsx`;
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+        } else {
+            const result = await response.json();
+            throw new Error(result.message);
+        }
+    } catch (error) {
+        console.error('Export error:', error);
+        alert('Ошибка при экспорте финансового отчета: ' + error.message);
+    }
+}
+
+function printFinancialReport() {
     window.print();
 }
