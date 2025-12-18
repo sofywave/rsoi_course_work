@@ -194,11 +194,208 @@ function printWorkloadReport() {
     window.print();
 }
 
+// Production Plan functions
+async function generateProductionPlan() {
+    const startDate = document.getElementById('planStartDate').value;
+    const endDate = document.getElementById('planEndDate').value;
+
+    if (!startDate || !endDate) {
+        alert('Пожалуйста, выберите период для формирования плана');
+        return;
+    }
+
+    try {
+        const response = await fetch(`/api/reports/production-plan?startDate=${startDate}&endDate=${endDate}`, {
+            headers: getAuthHeaders()
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            displayProductionPlan(result.data, result.totalOrders);
+            document.getElementById('productionPlanResults').style.display = 'block';
+        } else {
+            throw new Error(result.message);
+        }
+    } catch (error) {
+        console.error('Production plan error:', error);
+        alert('Ошибка при формировании плана производства: ' + error.message);
+    }
+}
+
+function displayProductionPlan(data, totalOrders) {
+    const tbody = document.getElementById('productionPlanTableBody');
+    const summary = document.getElementById('planSummary');
+
+    tbody.innerHTML = '';
+    summary.innerHTML = `<h3>Итого: ${totalOrders} заказов в производстве</h3>`;
+
+    data.forEach(item => {
+        const row = document.createElement('tr');
+        const orderNumbers = item.orders.map(order => order.orderNumber).join(', ');
+
+        row.innerHTML = `
+            <td>${item.productType}</td>
+            <td>${item.priceRange}</td>
+            <td><strong>${item.quantity}</strong></td>
+            <td>${orderNumbers}</td>
+        `;
+        tbody.appendChild(row);
+    });
+}
+
+async function exportProductionPlan() {
+    const startDate = document.getElementById('planStartDate').value;
+    const endDate = document.getElementById('planEndDate').value;
+
+    if (!startDate || !endDate) {
+        alert('Пожалуйста, сформируйте план перед экспортом');
+        return;
+    }
+
+    try {
+        const response = await fetch(`/api/reports/production-plan/export?startDate=${startDate}&endDate=${endDate}`, {
+            headers: getAuthHeaders()
+        });
+
+        if (response.ok) {
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.style.display = 'none';
+            a.href = url;
+            a.download = `production_plan_${startDate}_${endDate}.xlsx`;
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+        } else {
+            const result = await response.json();
+            throw new Error(result.message);
+        }
+    } catch (error) {
+        console.error('Export error:', error);
+        alert('Ошибка при экспорте плана производства: ' + error.message);
+    }
+}
+
+function printProductionPlan() {
+    window.print();
+}
+
+// Financial Report functions
+async function generateFinancialReport() {
+    const startDate = document.getElementById('financialStartDate').value;
+    const endDate = document.getElementById('financialEndDate').value;
+
+    if (!startDate || !endDate) {
+        alert('Пожалуйста, выберите период для формирования отчета');
+        return;
+    }
+
+    try {
+        const response = await fetch(`/api/reports/financial?startDate=${startDate}&endDate=${endDate}`, {
+            headers: getAuthHeaders()
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            displayFinancialReport(result.data);
+            document.getElementById('financialReportResults').style.display = 'block';
+        } else {
+            throw new Error(result.message);
+        }
+    } catch (error) {
+        console.error('Financial report error:', error);
+        alert('Ошибка при формировании финансового отчета: ' + error.message);
+    }
+}
+
+function displayFinancialReport(data) {
+    const tbody = document.getElementById('financialReportTableBody');
+    const summary = document.getElementById('financialSummary');
+
+    tbody.innerHTML = '';
+
+    // Display summary
+    summary.innerHTML = `
+        <div class="financial-metrics">
+            <div class="metric-card">
+                <h4>Всего заказов</h4>
+                <span class="metric-value">${data.summary.totalOrders}</span>
+            </div>
+            <div class="metric-card">
+                <h4>Общая выручка</h4>
+                <span class="metric-value">${data.summary.totalRevenue.toFixed(2)} BYN</span>
+            </div>
+            <div class="metric-card">
+                <h4>Средняя цена заказа</h4>
+                <span class="metric-value">${data.summary.averagePrice.toFixed(2)} BYN</span>
+            </div>
+        </div>
+    `;
+
+    // Display order details
+    data.orders.forEach(order => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${order.orderNumber}</td>
+            <td>${order.clientName}</td>
+            <td>${order.masterName}</td>
+            <td>${order.productType}</td>
+            <td>${order.status === 'completed' ? 'Завершен' : 'Доставлен'}</td>
+            <td><strong>${order.price.toFixed(2)} BYN</strong></td>
+            <td>${order.createdAt}</td>
+            <td>${order.completedAt}</td>
+        `;
+        tbody.appendChild(row);
+    });
+}
+
+async function exportFinancialReport() {
+    const startDate = document.getElementById('financialStartDate').value;
+    const endDate = document.getElementById('financialEndDate').value;
+
+    if (!startDate || !endDate) {
+        alert('Пожалуйста, сформируйте отчет перед экспортом');
+        return;
+    }
+
+    try {
+        const response = await fetch(`/api/reports/financial/export?startDate=${startDate}&endDate=${endDate}`, {
+            headers: getAuthHeaders()
+        });
+
+        if (response.ok) {
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.style.display = 'none';
+            a.href = url;
+            a.download = `financial_report_${startDate}_${endDate}.xlsx`;
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+        } else {
+            const result = await response.json();
+            throw new Error(result.message);
+        }
+    } catch (error) {
+        console.error('Export error:', error);
+        alert('Ошибка при экспорте финансового отчета: ' + error.message);
+    }
+}
+
+function printFinancialReport() {
+    window.print();
+}
+
 // UI management functions
 function showReportSelection() {
     document.getElementById('reportSelection').style.display = 'block';
     document.getElementById('workloadReportSection').style.display = 'none';
-    document.getElementById('nonAdminPlaceholder').style.display = 'none';
 }
 
 function showWorkloadReport() {
@@ -216,11 +413,44 @@ function showWorkloadReport() {
 }
 
 function showFinancialReport() {
-    alert('Функционал финансовых отчетов будет реализован в будущем');
+    document.getElementById('reportSelection').style.display = 'none';
+    document.getElementById('financialReportSection').style.display = 'block';
+    document.getElementById('financialReportResults').style.display = 'none';
+
+    // Set default date range (current month)
+    const now = new Date();
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+
+    document.getElementById('financialStartDate').value = startOfMonth.toISOString().split('T')[0];
+    document.getElementById('financialEndDate').value = endOfMonth.toISOString().split('T')[0];
 }
 
 function showProductionReport() {
-    alert('Функционал планов производства будет реализован в будущем');
+    document.getElementById('reportSelection').style.display = 'none';
+    document.getElementById('productionPlanSection').style.display = 'block';
+    document.getElementById('productionPlanResults').style.display = 'none';
+
+    // Configure back button based on user role
+    const user = JSON.parse(localStorage.getItem('user'));
+    const backBtn = document.getElementById('backToReportsBtn2');
+    if (user && user.role === 'master') {
+        backBtn.textContent = '← Назад на главную';
+        backBtn.onclick = () => window.location.href = '/master-dashboard';
+        backBtn.style.display = 'inline-block';
+    } else {
+        backBtn.textContent = '← Назад к выбору отчетов';
+        backBtn.onclick = showReportSelection;
+        backBtn.style.display = 'inline-block';
+    }
+
+    // Set default date range (current month)
+    const now = new Date();
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+
+    document.getElementById('planStartDate').value = startOfMonth.toISOString().split('T')[0];
+    document.getElementById('planEndDate').value = endOfMonth.toISOString().split('T')[0];
 }
 
 // Initialize reports page when DOM is loaded
@@ -234,14 +464,19 @@ document.addEventListener('DOMContentLoaded', function() {
         return;
     }
 
-    // Verify user role (admins and managers can access reports)
-    if (user.role !== 'admin' && user.role !== 'manager') {
-        document.getElementById('nonAdminPlaceholder').style.display = 'block';
-        document.getElementById('reportSelection').style.display = 'none';
-        document.getElementById('workloadReportSection').style.display = 'none';
-    } else {
+    // Verify user role (admins, managers, and masters can access reports)
+    if (user.role === 'master') {
+        // Masters can only access production plan
+        showProductionReport();
+    } else if (user.role === 'admin' || user.role === 'manager') {
         // Show report selection for admins and managers
         showReportSelection();
+    } else {
+        // Other roles cannot access reports
+        document.getElementById('reportSelection').style.display = 'none';
+        document.getElementById('workloadReportSection').style.display = 'none';
+        document.getElementById('productionPlanSection').style.display = 'none';
+        document.getElementById('financialReportSection').style.display = 'none';
     }
 
     // Update user info in header
@@ -286,6 +521,17 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('generateWorkloadBtn').addEventListener('click', generateWorkloadReport);
     document.getElementById('exportWorkloadBtn').addEventListener('click', exportWorkloadReport);
     document.getElementById('printWorkloadBtn').addEventListener('click', printWorkloadReport);
+
+    // Production plan event listeners
+    document.getElementById('generateProductionPlanBtn').addEventListener('click', generateProductionPlan);
+    document.getElementById('exportProductionPlanBtn').addEventListener('click', exportProductionPlan);
+    document.getElementById('printProductionPlanBtn').addEventListener('click', printProductionPlan);
+
+    // Financial report event listeners
+    document.getElementById('backToReportsBtn3').addEventListener('click', showReportSelection);
+    document.getElementById('generateFinancialReportBtn').addEventListener('click', generateFinancialReport);
+    document.getElementById('exportFinancialReportBtn').addEventListener('click', exportFinancialReport);
+    document.getElementById('printFinancialReportBtn').addEventListener('click', printFinancialReport);
 
     // Close modals when clicking outside
     window.addEventListener('click', (event) => {

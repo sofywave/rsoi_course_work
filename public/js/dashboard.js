@@ -431,6 +431,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
             const response = await fetch('/api/orders', {
                 method: 'POST',
+                headers: getAuthHeadersForFormData(),
                 body: formData
             });
 

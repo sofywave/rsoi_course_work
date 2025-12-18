@@ -1015,6 +1015,342 @@ app.get('/api/reports/workload/export', authenticateToken, authorizeRoles('admin
     }
 });
 
+// GET /api/reports/production-plan - Get production plan report
+app.get('/api/reports/production-plan', authenticateToken, authorizeRoles('admin', 'manager', 'master'), async (req, res) => {
+    try {
+        const { startDate, endDate } = req.query;
+
+        if (!startDate || !endDate) {
+            return res.status(400).json({
+                success: false,
+                message: 'Start date and end date are required'
+            });
+        }
+
+        // Parse dates
+        const start = new Date(startDate);
+        const end = new Date(endDate);
+        end.setHours(23, 59, 59, 999); // Include the entire end date
+
+        // Find all orders with status "in_progress" within the date range
+        const orders = await Order.find({
+            status: 'in_progress',
+            createdAt: { $gte: start, $lte: end }
+        }).populate('client', 'fullName').populate('assignedTo', 'fullName');
+
+        // Group orders by product type and count quantities
+        const productionData = {};
+        const productTypeMapping = Order.getProductPriceMapping();
+
+        orders.forEach(order => {
+            const productType = order.productType || 'Не указан';
+            const priceRange = order.priceRange || 'Не указан';
+
+            if (!productionData[productType]) {
+                productionData[productType] = {
+                    productType: productType,
+                    priceRange: priceRange,
+                    quantity: 0,
+                    orders: []
+                };
+            }
+
+            productionData[productType].quantity += 1;
+            productionData[productType].orders.push({
+                orderNumber: order.orderNumber,
+                clientName: order.client?.fullName || 'Не указан',
+                masterName: order.assignedTo?.fullName || 'Не назначен',
+                deadline: order.formattedDeadline,
+                description: order.description || 'Нет описания'
+            });
+        });
+
+        // Convert to array and sort by quantity descending
+        const productionPlan = Object.values(productionData).sort((a, b) => b.quantity - a.quantity);
+
+        res.json({
+            success: true,
+            data: productionPlan,
+            period: {
+                startDate,
+                endDate
+            },
+            totalOrders: orders.length
+        });
+
+    } catch (error) {
+        console.error('Production plan error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Server error while generating production plan'
+        });
+    }
+});
+
+// GET /api/reports/production-plan/export - Export production plan as Excel
+app.get('/api/reports/production-plan/export', authenticateToken, authorizeRoles('admin', 'manager', 'master'), async (req, res) => {
+    try {
+        const { startDate, endDate } = req.query;
+
+        if (!startDate || !endDate) {
+            return res.status(400).json({
+                success: false,
+                message: 'Start date and end date are required'
+            });
+        }
+
+        // Get production plan data
+        const response = await fetch(`${req.protocol}://${req.get('host')}/api/reports/production-plan?startDate=${startDate}&endDate=${endDate}`, {
+            headers: {
+                'Authorization': req.headers.authorization
+            }
+        });
+
+        const result = await response.json();
+
+        if (!result.success) {
+            throw new Error(result.message);
+        }
+
+        // Create Excel file
+        const ExcelJS = require('exceljs');
+        const workbook = new ExcelJS.Workbook();
+        const worksheet = workbook.addWorksheet('План производства');
+
+        // Set column headers
+        worksheet.columns = [
+            { header: 'Тип изделия', key: 'productType', width: 25 },
+            { header: 'Ценовой диапазон', key: 'priceRange', width: 20 },
+            { header: 'Количество', key: 'quantity', width: 12 },
+            { header: 'Заказы', key: 'orders', width: 50 }
+        ];
+
+        // Style headers
+        worksheet.getRow(1).font = { bold: true };
+        worksheet.getRow(1).fill = {
+            type: 'pattern',
+            pattern: 'solid',
+            fgColor: { argb: 'FFE6E6FA' }
+        };
+
+        // Add data
+        result.data.forEach(item => {
+            const orderNumbers = item.orders.map(order => order.orderNumber).join(', ');
+            worksheet.addRow({
+                productType: item.productType,
+                priceRange: item.priceRange,
+                quantity: item.quantity,
+                orders: orderNumbers
+            });
+        });
+
+        // Add summary
+        worksheet.addRow({}); // Empty row
+        worksheet.addRow({
+            productType: 'ИТОГО ЗАКАЗОВ:',
+            quantity: result.totalOrders
+        });
+
+        // Style summary
+        const summaryRow = worksheet.lastRow;
+        summaryRow.font = { bold: true };
+        summaryRow.fill = {
+            type: 'pattern',
+            pattern: 'solid',
+            fgColor: { argb: 'FFFFE4B5' }
+        };
+
+        // Set response headers
+        res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        res.setHeader('Content-Disposition', `attachment; filename=production_plan_${startDate}_${endDate}.xlsx`);
+
+        // Write to response
+        await workbook.xlsx.write(res);
+        res.end();
+
+    } catch (error) {
+        console.error('Production plan export error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Server error while exporting production plan'
+        });
+    }
+});
+
+// GET /api/reports/financial - Get financial report
+app.get('/api/reports/financial', authenticateToken, authorizeRoles('admin', 'manager'), async (req, res) => {
+    try {
+        const { startDate, endDate } = req.query;
+
+        if (!startDate || !endDate) {
+            return res.status(400).json({
+                success: false,
+                message: 'Start date and end date are required'
+            });
+        }
+
+        // Parse dates
+        const start = new Date(startDate);
+        const end = new Date(endDate);
+        end.setHours(23, 59, 59, 999); // Include the entire end date
+
+        // Find all orders with status "completed" or "delivered" within the date range
+        const orders = await Order.find({
+            status: { $in: ['completed', 'delivered'] },
+            createdAt: { $gte: start, $lte: end },
+            price: { $exists: true, $gt: 0 } // Only orders with valid prices
+        }).populate('client', 'fullName').populate('assignedTo', 'fullName')
+          .sort({ createdAt: -1 }); // Sort by creation date descending
+
+        // Calculate financial metrics
+        const totalRevenue = orders.reduce((sum, order) => sum + (order.price || 0), 0);
+        const averagePrice = orders.length > 0 ? totalRevenue / orders.length : 0;
+
+        // Format order data for display
+        const orderData = orders.map(order => ({
+            orderNumber: order.orderNumber,
+            clientName: order.client?.fullName || 'Не указан',
+            masterName: order.assignedTo?.fullName || 'Не назначен',
+            productType: order.productType || 'Не указан',
+            status: order.status,
+            price: order.price || 0,
+            createdAt: order.createdAt.toISOString().split('T')[0],
+            completedAt: order.updatedAt.toISOString().split('T')[0]
+        }));
+
+        res.json({
+            success: true,
+            data: {
+                orders: orderData,
+                summary: {
+                    totalOrders: orders.length,
+                    totalRevenue: totalRevenue,
+                    averagePrice: Math.round(averagePrice * 100) / 100 // Round to 2 decimal places
+                }
+            },
+            period: {
+                startDate,
+                endDate
+            }
+        });
+
+    } catch (error) {
+        console.error('Financial report error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Server error while generating financial report'
+        });
+    }
+});
+
+// GET /api/reports/financial/export - Export financial report as Excel
+app.get('/api/reports/financial/export', authenticateToken, authorizeRoles('admin', 'manager'), async (req, res) => {
+    try {
+        const { startDate, endDate } = req.query;
+
+        if (!startDate || !endDate) {
+            return res.status(400).json({
+                success: false,
+                message: 'Start date and end date are required'
+            });
+        }
+
+        // Get financial data
+        const response = await fetch(`${req.protocol}://${req.get('host')}/api/reports/financial?startDate=${startDate}&endDate=${endDate}`, {
+            headers: {
+                'Authorization': req.headers.authorization
+            }
+        });
+
+        const result = await response.json();
+
+        if (!result.success) {
+            throw new Error(result.message);
+        }
+
+        // Create Excel file
+        const ExcelJS = require('exceljs');
+        const workbook = new ExcelJS.Workbook();
+        const worksheet = workbook.addWorksheet('Финансовый отчет');
+
+        // Set column headers
+        worksheet.columns = [
+            { header: 'Номер заказа', key: 'orderNumber', width: 15 },
+            { header: 'Клиент', key: 'clientName', width: 25 },
+            { header: 'Мастер', key: 'masterName', width: 25 },
+            { header: 'Тип изделия', key: 'productType', width: 20 },
+            { header: 'Статус', key: 'status', width: 15 },
+            { header: 'Цена (BYN)', key: 'price', width: 12 },
+            { header: 'Дата создания', key: 'createdAt', width: 15 },
+            { header: 'Дата завершения', key: 'completedAt', width: 15 }
+        ];
+
+        // Style headers
+        worksheet.getRow(1).font = { bold: true };
+        worksheet.getRow(1).fill = {
+            type: 'pattern',
+            pattern: 'solid',
+            fgColor: { argb: 'FFE6E6FA' }
+        };
+
+        // Add order data
+        result.data.orders.forEach(order => {
+            worksheet.addRow({
+                orderNumber: order.orderNumber,
+                clientName: order.clientName,
+                masterName: order.masterName,
+                productType: order.productType,
+                status: order.status === 'completed' ? 'Завершен' : 'Доставлен',
+                price: order.price,
+                createdAt: order.createdAt,
+                completedAt: order.completedAt
+            });
+        });
+
+        // Add summary section
+        worksheet.addRow({}); // Empty row
+        worksheet.addRow({
+            orderNumber: 'ИТОГО ЗАКАЗОВ:',
+            price: result.data.summary.totalOrders
+        });
+        worksheet.addRow({
+            orderNumber: 'ОБЩАЯ ВЫРУЧКА (BYN):',
+            price: result.data.summary.totalRevenue
+        });
+        worksheet.addRow({
+            orderNumber: 'СРЕДНЯЯ ЦЕНА ЗАКАЗА (BYN):',
+            price: result.data.summary.averagePrice
+        });
+
+        // Style summary rows
+        const summaryStartRow = worksheet.lastRow.number - 2;
+        for (let i = 0; i < 3; i++) {
+            const row = worksheet.getRow(summaryStartRow + i);
+            row.font = { bold: true };
+            row.fill = {
+                type: 'pattern',
+                pattern: 'solid',
+                fgColor: { argb: 'FFFFE4B5' }
+            };
+        }
+
+        // Set response headers
+        res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        res.setHeader('Content-Disposition', `attachment; filename=financial_report_${startDate}_${endDate}.xlsx`);
+
+        // Write to response
+        await workbook.xlsx.write(res);
+        res.end();
+
+    } catch (error) {
+        console.error('Financial export error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Server error while exporting financial report'
+        });
+    }
+});
+
 // User Profile API Routes
 
 // GET /api/users/debug - Debug endpoint to check users

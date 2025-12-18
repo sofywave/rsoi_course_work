@@ -209,6 +209,100 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Production Plan Section -->
+            <div class="production-plan-section" id="productionPlanSection" style="display: none;">
+                <div class="report-header">
+                    <h3>План производства</h3>
+                    <button class="back-btn" id="backToReportsBtn2">&larr; Назад к выбору отчетов</button>
+                </div>
+
+                <div class="report-filters">
+                    <div class="filter-group">
+                        <label for="planStartDate">Период с:</label>
+                        <input type="date" id="planStartDate" class="form-input">
+                    </div>
+                    <div class="filter-group">
+                        <label for="planEndDate">по:</label>
+                        <input type="date" id="planEndDate" class="form-input">
+                    </div>
+                    <button class="generate-btn" id="generateProductionPlanBtn">Сформировать план</button>
+                </div>
+
+                <div class="report-results" id="productionPlanResults" style="display: none;">
+                    <div class="report-actions">
+                        <button class="export-btn" id="exportProductionPlanBtn">Экспорт в Excel</button>
+                        <button class="print-btn" id="printProductionPlanBtn">Печать</button>
+                    </div>
+                    <div class="production-plan-container">
+                        <div class="plan-summary" id="planSummary">
+                            <!-- Summary will be populated here -->
+                        </div>
+                        <table class="production-plan-table" id="productionPlanTable">
+                            <thead>
+                                <tr>
+                                    <th>Тип изделия</th>
+                                    <th>Ценовой диапазон</th>
+                                    <th>Количество</th>
+                                    <th>Номера заказов</th>
+                                </tr>
+                            </thead>
+                            <tbody id="productionPlanTableBody">
+                                <!-- Data will be populated here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Financial Report Section -->
+            <div class="financial-report-section" id="financialReportSection" style="display: none;">
+                <div class="report-header">
+                    <h3>Финансовый отчет</h3>
+                    <button class="back-btn" id="backToReportsBtn3">&larr; Назад к выбору отчетов</button>
+                </div>
+
+                <div class="report-filters">
+                    <div class="filter-group">
+                        <label for="financialStartDate">Период с:</label>
+                        <input type="date" id="financialStartDate" class="form-input">
+                    </div>
+                    <div class="filter-group">
+                        <label for="financialEndDate">по:</label>
+                        <input type="date" id="financialEndDate" class="form-input">
+                    </div>
+                    <button class="generate-btn" id="generateFinancialReportBtn">Сформировать отчет</button>
+                </div>
+
+                <div class="report-results" id="financialReportResults" style="display: none;">
+                    <div class="report-actions">
+                        <button class="export-btn" id="exportFinancialReportBtn">Экспорт в Excel</button>
+                        <button class="print-btn" id="printFinancialReportBtn">Печать</button>
+                    </div>
+                    <div class="financial-report-container">
+                        <div class="financial-summary" id="financialSummary">
+                            <!-- Summary will be populated here -->
+                        </div>
+                        <table class="financial-report-table" id="financialReportTable">
+                            <thead>
+                                <tr>
+                                    <th>Номер заказа</th>
+                                    <th>Клиент</th>
+                                    <th>Мастер</th>
+                                    <th>Тип изделия</th>
+                                    <th>Статус</th>
+                                    <th>Цена (BYN)</th>
+                                    <th>Дата создания</th>
+                                    <th>Дата завершения</th>
+                                </tr>
+                            </thead>
+                            <tbody id="financialReportTableBody">
+                                <!-- Data will be populated here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
         </section>
     </main>
 

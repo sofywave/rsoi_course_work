@@ -693,6 +693,237 @@ body {
     }
 }
 
+/* Production Plan Styles */
+.production-plan-section {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.plan-summary {
+    background: #f8f9fa;
+    padding: 1.5rem;
+    border-radius: 8px;
+    margin-bottom: 2rem;
+    text-align: center;
+    border: 1px solid #e1e8ed;
+}
+
+.plan-summary h3 {
+    color: #2c3e50;
+    margin: 0;
+    font-size: 1.4rem;
+}
+
+.production-plan-container {
+    overflow-x: auto;
+}
+
+.production-plan-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+    margin-top: 1rem;
+}
+
+.production-plan-table th,
+.production-plan-table td {
+    padding: 1rem 0.75rem;
+    text-align: left;
+    border-bottom: 1px solid #e1e8ed;
+}
+
+.production-plan-table th {
+    background: #f8f9fa;
+    font-weight: 600;
+    color: #2c3e50;
+    border-bottom: 2px solid #bdc3c7;
+}
+
+.production-plan-table tr:nth-child(even) {
+    background: #f8f9fa;
+}
+
+.production-plan-table tr:hover {
+    background: #ecf0f1;
+}
+
+.production-plan-table td:nth-child(3) {
+    font-weight: bold;
+    color: #e67e22;
+    text-align: center;
+}
+
+.production-plan-table td:nth-child(4) {
+    font-family: monospace;
+    font-size: 0.85rem;
+}
+
+/* Print styles for production plan */
+@media print {
+    .dashboard-header,
+    .report-filters,
+    .report-actions,
+    .back-btn {
+        display: none !important;
+    }
+
+    .production-plan-section {
+        margin: 0;
+    }
+
+    .report-header {
+        border-bottom: 2px solid #000;
+        margin-bottom: 1rem;
+    }
+
+    .production-plan-table {
+        font-size: 12px;
+    }
+
+    .production-plan-table th,
+    .production-plan-table td {
+        padding: 0.5rem 0.25rem;
+    }
+
+    .plan-summary {
+        background: white !important;
+        border: 2px solid #000;
+    }
+}
+
+/* Financial Report Styles */
+.financial-report-section {
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.financial-summary {
+    background: #f8f9fa;
+    padding: 2rem;
+    border-radius: 8px;
+    margin-bottom: 2rem;
+    border: 1px solid #e1e8ed;
+}
+
+.financial-metrics {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+}
+
+.metric-card {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 8px;
+    text-align: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.metric-card h4 {
+    color: #2c3e50;
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.metric-value {
+    font-size: 1.8rem;
+    font-weight: bold;
+    color: #e67e22;
+}
+
+.financial-report-container {
+    overflow-x: auto;
+}
+
+.financial-report-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+    margin-top: 1rem;
+}
+
+.financial-report-table th,
+.financial-report-table td {
+    padding: 0.75rem 0.5rem;
+    text-align: left;
+    border-bottom: 1px solid #e1e8ed;
+}
+
+.financial-report-table th {
+    background: #f8f9fa;
+    font-weight: 600;
+    color: #2c3e50;
+    border-bottom: 2px solid #bdc3c7;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.financial-report-table tr:nth-child(even) {
+    background: #f8f9fa;
+}
+
+.financial-report-table tr:hover {
+    background: #ecf0f1;
+}
+
+.financial-report-table td:nth-child(6) {
+    font-weight: bold;
+    color: #27ae60;
+    text-align: right;
+}
+
+.financial-report-table td:nth-child(5) {
+    font-weight: 500;
+}
+
+/* Print styles for financial report */
+@media print {
+    .dashboard-header,
+    .report-filters,
+    .report-actions,
+    .back-btn {
+        display: none !important;
+    }
+
+    .financial-report-section {
+        margin: 0;
+    }
+
+    .report-header {
+        border-bottom: 2px solid #000;
+        margin-bottom: 1rem;
+    }
+
+    .financial-report-table {
+        font-size: 10px;
+    }
+
+    .financial-report-table th,
+    .financial-report-table td {
+        padding: 0.3rem 0.2rem;
+    }
+
+    .financial-summary {
+        background: white !important;
+        border: 2px solid #000;
+        page-break-inside: avoid;
+    }
+
+    .financial-metrics {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1rem;
+    }
+
+    .metric-card {
+        padding: 1rem;
+        box-shadow: none;
+        border: 1px solid #000;
+    }
+}
+
 /* Responsive adjustments */
 @media (max-width: 768px) {
     .report-types-grid {
@@ -719,12 +950,28 @@ body {
         flex-direction: column;
     }
 
-    .workload-table {
-        font-size: 0.8rem;
+    .workload-table,
+    .production-plan-table,
+    .financial-report-table {
+        font-size: 0.75rem;
     }
 
     .workload-table th,
-    .workload-table td {
-        padding: 0.5rem 0.25rem;
+    .workload-table td,
+    .production-plan-table th,
+    .production-plan-table td,
+    .financial-report-table th,
+    .financial-report-table td {
+        padding: 0.4rem 0.2rem;
+    }
+
+    .plan-summary h3,
+    .metric-value {
+        font-size: 1.2rem;
+    }
+
+    .financial-metrics {
+        grid-template-columns: 1fr;
+        gap: 1rem;
     }
 }
